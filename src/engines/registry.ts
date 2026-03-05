@@ -43,13 +43,13 @@ const BUILTIN_DEFINITIONS: EngineDefinition[] = [
   },
   ...(process.env.DEGOOG_BRAVE_API_KEY
     ? [
-        {
-          id: "brave",
-          displayName: "Brave Search",
-          searchType: "web" as const,
-          EngineClass: BraveEngine,
-        },
-      ]
+      {
+        id: "brave",
+        displayName: "Brave Search",
+        searchType: "web" as const,
+        EngineClass: BraveEngine,
+      },
+    ]
     : []),
   {
     id: "wikipedia",
@@ -225,10 +225,8 @@ export async function initPlugins(): Promise<void> {
           instance,
         });
       } catch {
-        // skip invalid or broken plugins
       }
     }
   } catch {
-    // plugin dir missing or not readable
   }
 }

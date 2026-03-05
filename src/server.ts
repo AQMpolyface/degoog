@@ -39,7 +39,7 @@ app.get("/", (c) => {
 });
 
 app.get("/search", (c) => {
-  return c.html(Bun.file("src/public/index.html").text());
+  return c.html(Bun.file("src/public/search.html").text());
 });
 
 app.get("/settings", (c) => {
@@ -82,14 +82,9 @@ app.get("/api/search", async (c) => {
   return c.json(response);
 });
 
-app.get("/api/suggest", async (c) => {
-  const query = c.req.query("q");
-  if (!query) {
-    return c.json([]);
-  }
-
+async function getSuggestions(query: string): Promise<string[]> {
+  if (!query.trim()) return [];
   const encoded = encodeURIComponent(query);
-
   const [googleRes, ddgRes] = await Promise.allSettled([
     fetch(
       `https://suggestqueries.google.com/complete/search?client=firefox&q=${encoded}`,
@@ -98,26 +93,57 @@ app.get("/api/suggest", async (c) => {
       r.json(),
     ),
   ]);
-
   const googleSuggestions: string[] =
-    googleRes.status === "fulfilled" ? googleRes.value[1] || [] : [];
+    googleRes.status === "fulfilled" ? (googleRes.value as [unknown, string[]])[1] || [] : [];
   const ddgSuggestions: string[] =
-    ddgRes.status === "fulfilled" ? ddgRes.value[1] || [] : [];
-
+    ddgRes.status === "fulfilled" ? (ddgRes.value as [unknown, string[]])[1] || [] : [];
   const seen = new Set<string>();
   const merged: string[] = [];
   const lower = query.toLowerCase();
-
   for (const s of [...googleSuggestions, ...ddgSuggestions]) {
-    const key = s.toLowerCase();
+    const key = String(s).toLowerCase();
     if (key !== lower && !seen.has(key)) {
       seen.add(key);
-      merged.push(s);
+      merged.push(String(s));
     }
     if (merged.length >= 10) break;
   }
+  return merged;
+}
 
+function buildOpenSearchXml(origin: string): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>deGoog</ShortName>
+  <Description>deGoog Search</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="16" height="16" type="image/x-icon">${origin}/public/favicon/favicon.ico</Image>
+  <Url type="text/html" template="${origin}/search?q={searchTerms}"/>
+  <Url type="application/x-suggestions+json" template="${origin}/api/suggest/opensearch?q={searchTerms}"/>
+</OpenSearchDescription>`;
+}
+
+app.get("/opensearch.xml", (c) => {
+  const proto = c.req.header("x-forwarded-proto") || new URL(c.req.url).protocol.replace(":", "");
+  const host = c.req.header("x-forwarded-host") || c.req.header("host") || new URL(c.req.url).host;
+  const origin = `${proto}://${host}`;
+  return c.body(buildOpenSearchXml(origin), 200, {
+    "Content-Type": "application/opensearchdescription+xml; charset=utf-8",
+  });
+});
+
+app.get("/api/suggest", async (c) => {
+  const query = c.req.query("q") ?? "";
+  const merged = await getSuggestions(query);
   return c.json(merged);
+});
+
+app.get("/api/suggest/opensearch", async (c) => {
+  const query = c.req.query("q") ?? "";
+  const suggestions = await getSuggestions(query);
+  return c.json([query, suggestions], 200, {
+    "Content-Type": "application/x-suggestions+json",
+  });
 });
 
 app.get("/api/lucky", async (c) => {

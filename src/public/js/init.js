@@ -11,14 +11,6 @@ export function init() {
   const searchInput = document.getElementById("search-input");
   const resultsInput = document.getElementById("results-search-input");
 
-  searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") performSearch(searchInput.value);
-  });
-
-  document.getElementById("btn-search").addEventListener("click", () => {
-    performSearch(searchInput.value);
-  });
-
   resultsInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") performSearch(resultsInput.value);
   });
