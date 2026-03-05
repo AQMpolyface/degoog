@@ -5,10 +5,13 @@ export const uuidCommand: BangCommand = {
   description: "Generate a random UUID v4",
   trigger: "uuid",
   async execute(): Promise<CommandResult> {
-    const uuid = crypto.randomUUID();
+    const uuids = Array.from({ length: 10 }, () => crypto.randomUUID());
+    const rows = uuids
+      .map((u) => `<div class="uuid-row"><code class="uuid-value">${u}</code><button type="button" class="uuid-copy" data-uuid="${u}">Copy</button></div>`)
+      .join("");
     return {
-      title: "Generated UUID",
-      html: `<div class="command-result command-uuid"><code id="uuid-value">${uuid}</code><button onclick="navigator.clipboard.writeText(document.getElementById('uuid-value').textContent).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button></div>`,
+      title: "Generated UUIDs",
+      html: `<div class="command-result command-uuid">${rows}</div>`,
     };
   },
 };

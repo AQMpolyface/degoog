@@ -182,7 +182,7 @@ app.get("/api/command", async (c) => {
   }
   const forwarded = c.req.header("x-forwarded-for");
   const realIp = c.req.header("x-real-ip");
-  const bunIp = c.env?.requestIP?.(c.req.raw)?.address;
+  const bunIp = (c.env as { requestIP: (req: Request) => { address: string } }).requestIP(c.req.raw)?.address;
   const clientIp = forwarded ? forwarded.split(",")[0].trim() : realIp || bunIp || undefined;
   const result = await match.command.execute(match.args, { clientIp });
   return c.json({

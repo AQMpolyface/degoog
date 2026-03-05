@@ -31,8 +31,14 @@
 
 .command-uuid {
   display: flex;
-  align-items: center;
-  gap: 1em;
+  flex-direction: column;
+  gap: 0.75em;
+
+  .uuid-row {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+  }
 
   code {
     font-size: 1.25em;
@@ -43,18 +49,20 @@
     user-select: all;
   }
 
-  button {
+  .uuid-copy {
     padding: 0.5em 1em;
-    background: var(--btn-bg);
-    color: var(--btn-text);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    background: var(--search-bar-bg);
+    color: var(--text-primary);
+    border: none;
+    border-radius: $search-bar-radius;
     cursor: pointer;
     font-size: $font-size-base;
     transition: background $transition-fast;
+    -webkit-appearance: none;
+    appearance: none;
 
     &:hover {
-      background: var(--bg-hover);
+      background: var(--search-bar-bg-hover);
     }
   }
 }

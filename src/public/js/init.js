@@ -7,6 +7,22 @@ import { initMediaPreview } from "./mediaPreview.js";
 import { initTheme } from "./theme.js";
 import { initTimeFilter } from "./timeFilter.js";
 
+function copyToClipboardFallback(text, onSuccess) {
+  const el = document.createElement("textarea");
+  el.value = text;
+  el.setAttribute("readonly", "");
+  el.style.position = "fixed";
+  el.style.left = "-9999px";
+  document.body.appendChild(el);
+  el.select();
+  try {
+    document.execCommand("copy");
+    onSuccess();
+  } finally {
+    document.body.removeChild(el);
+  }
+}
+
 export function init() {
   const searchInput = document.getElementById("search-input");
   const resultsInput = document.getElementById("results-search-input");
@@ -33,6 +49,25 @@ export function init() {
   initMediaPreview();
   initTheme();
   initTimeFilter();
+
+  document.body.addEventListener("click", (e) => {
+    const btn = e.target.closest(".uuid-copy");
+    if (!btn || !btn.dataset.uuid) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const uuid = btn.dataset.uuid;
+    const done = () => {
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = "Copy"; }, 1500);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(uuid).then(done).catch(() => {
+        copyToClipboardFallback(uuid, done);
+      });
+    } else {
+      copyToClipboardFallback(uuid, done);
+    }
+  });
 
   const params = new URLSearchParams(window.location.search);
   const q = params.get("q");
