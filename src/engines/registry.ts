@@ -1,4 +1,9 @@
-import type { SearchEngine, SearchType, EngineConfig, ExtensionMeta } from "../types";
+import type {
+  SearchEngine,
+  SearchType,
+  EngineConfig,
+  ExtensionMeta,
+} from "../types";
 import { getSettings, maskSecrets } from "../plugin-settings";
 import { GoogleEngine } from "./google";
 import { DuckDuckGoEngine } from "./duckduckgo";
@@ -43,7 +48,7 @@ const BUILTIN_DEFINITIONS: EngineDefinition[] = [
   {
     id: "brave",
     displayName: "Brave Search",
-    searchType: "web" as const,
+    searchType: "web",
     EngineClass: BraveEngine,
   },
   {
@@ -140,6 +145,22 @@ function engineSearchTypeFromSearchType(
   return null;
 }
 
+function engineRequiresConfig(engine: SearchEngine): boolean {
+  const schema = engine.settingsSchema ?? [];
+  return schema.some((f) => f.required === true);
+}
+
+async function hasRequiredConfig(
+  engineId: string,
+  instance: SearchEngine,
+): Promise<boolean> {
+  const schema = instance.settingsSchema ?? [];
+  const requiredKeys = schema.filter((f) => f.required).map((f) => f.key);
+  if (requiredKeys.length === 0) return true;
+  const stored = await getSettings(engineId);
+  return requiredKeys.every((k) => (stored[k] ?? "").trim() !== "");
+}
+
 export function getEnginesForSearchType(
   type: SearchType,
   config: EngineConfig,
@@ -167,9 +188,38 @@ export function getEnginesForSearchType(
   return allDefinitions.map((d) => engineMap[d.id]).filter(Boolean);
 }
 
+export async function getActiveWebEngines(
+  config: EngineConfig,
+): Promise<SearchEngine[]> {
+  const allDefinitions = [
+    ...BUILTIN_DEFINITIONS.filter((d) => d.searchType === "web"),
+    ...pluginEntries.filter((e) => e.searchType === "web"),
+  ];
+  const engineMap = getEngineMap();
+  const active: SearchEngine[] = [];
+  for (const def of allDefinitions) {
+    if (!config[def.id]) continue;
+    const instance = engineMap[def.id];
+    if (!instance) continue;
+    if (!engineRequiresConfig(instance)) {
+      active.push(instance);
+      continue;
+    }
+    if (await hasRequiredConfig(def.id, instance)) active.push(instance);
+  }
+  return active;
+}
+
 export function getDefaultEngineConfig(): Record<string, boolean> {
   const entries = getEngineRegistry();
-  return Object.fromEntries(entries.map((e) => [e.id, true]));
+  const engineMap = getEngineMap();
+  return Object.fromEntries(
+    entries.map((e) => {
+      const instance = engineMap[e.id];
+      const disabledByDefault = instance && engineRequiresConfig(instance);
+      return [e.id, !disabledByDefault];
+    }),
+  );
 }
 
 export async function getEngineExtensionMeta(): Promise<ExtensionMeta[]> {
@@ -257,9 +307,7 @@ export async function initEngines(): Promise<void> {
           searchType,
           instance,
         });
-      } catch {
-      }
+      } catch {}
     }
-  } catch {
-  }
+  } catch {}
 }

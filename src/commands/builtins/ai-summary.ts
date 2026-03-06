@@ -8,7 +8,8 @@ export const aiSummarySettingsSchema: SettingField[] = [
     key: "enabled",
     label: "Enable AI Summary",
     type: "toggle",
-    description: "Replace At a Glance with a brief AI-generated summary of search results",
+    description:
+      "Replace At a Glance with a brief AI-generated summary of search results",
   },
   {
     key: "baseUrl",
@@ -16,7 +17,8 @@ export const aiSummarySettingsSchema: SettingField[] = [
     type: "url",
     required: true,
     placeholder: "https://api.openai.com/v1",
-    description: "OpenAI-compatible base URL. Use http://localhost:11434/v1 for Ollama",
+    description:
+      "OpenAI-compatible base URL. Use http://localhost:11434/v1 for Ollama",
   },
   {
     key: "model",
@@ -39,7 +41,8 @@ export const aiSummarySettingsSchema: SettingField[] = [
     label: "Timeout (seconds)",
     type: "text",
     placeholder: "30",
-    description: "Max seconds to wait for an AI response before falling back to the standard result.",
+    description:
+      "Max seconds to wait for an AI response before falling back to the standard result.",
   },
 ];
 
@@ -96,14 +99,20 @@ export async function generateAISummary(
     },
   ];
 
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
   if (settings.apiKey) headers["Authorization"] = `Bearer ${settings.apiKey}`;
 
   try {
     const res = await fetch(`${settings.baseUrl}/chat/completions`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ model: settings.model, messages, max_tokens: 256 }),
+      body: JSON.stringify({
+        model: settings.model,
+        messages,
+        max_tokens: 256,
+      }),
       signal: AbortSignal.timeout(settings.timeoutMs),
     });
     if (!res.ok) return null;

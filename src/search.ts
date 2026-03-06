@@ -1,5 +1,15 @@
-import type { SearchEngine, SearchResult, ScoredResult, SearchResponse, EngineConfig, SearchType, EngineTiming, KnowledgePanel, TimeFilter } from "./types";
-import { getEngineMap } from "./engines/registry";
+import type {
+  SearchEngine,
+  SearchResult,
+  ScoredResult,
+  SearchResponse,
+  EngineConfig,
+  SearchType,
+  EngineTiming,
+  KnowledgePanel,
+  TimeFilter,
+} from "./types";
+import { getEngineMap, getActiveWebEngines } from "./engines/registry";
 import { BingImagesEngine } from "./engines/bing-images";
 import { GoogleImagesEngine } from "./engines/google-images";
 import { BingVideosEngine } from "./engines/bing-videos";
@@ -9,8 +19,14 @@ import { BingNewsEngine } from "./engines/bing-news";
 const MAX_PAGE = 10;
 const ENGINE_TIMEOUT_MS = 10_000;
 
-const imageEngines: SearchEngine[] = [new GoogleImagesEngine(), new BingImagesEngine()];
-const videoEngines: SearchEngine[] = [new GoogleVideosEngine(), new BingVideosEngine()];
+const imageEngines: SearchEngine[] = [
+  new GoogleImagesEngine(),
+  new BingImagesEngine(),
+];
+const videoEngines: SearchEngine[] = [
+  new GoogleVideosEngine(),
+  new BingVideosEngine(),
+];
 const newsEngines: SearchEngine[] = [new BingNewsEngine()];
 
 function normalizeUrl(url: string): string {
@@ -26,7 +42,9 @@ function normalizeUrl(url: string): string {
   }
 }
 
-export function aggregateAndScore(allResults: SearchResult[][]): ScoredResult[] {
+export function aggregateAndScore(
+  allResults: SearchResult[][],
+): ScoredResult[] {
   const urlMap = new Map<string, ScoredResult>();
 
   for (const engineResults of allResults) {
@@ -63,7 +81,10 @@ export function aggregateAndScore(allResults: SearchResult[][]): ScoredResult[] 
   return scored;
 }
 
-export function mergeNewResults(existing: ScoredResult[], newResults: SearchResult[]): ScoredResult[] {
+export function mergeNewResults(
+  existing: ScoredResult[],
+  newResults: SearchResult[],
+): ScoredResult[] {
   const urlMap = new Map<string, ScoredResult>();
 
   for (const r of existing) {
@@ -99,32 +120,33 @@ export function mergeNewResults(existing: ScoredResult[], newResults: SearchResu
   return scored;
 }
 
-function getEnginesForType(type: SearchType, config: EngineConfig): SearchEngine[] {
+function getEnginesForType(
+  type: SearchType,
+  _config: EngineConfig,
+): SearchEngine[] {
   if (type === "images") return imageEngines;
   if (type === "videos") return videoEngines;
   if (type === "news") return newsEngines;
-
-  const engineMap = getEngineMap();
-  const active: SearchEngine[] = [];
-  for (const [key, enabled] of Object.entries(config)) {
-    if (enabled && key in engineMap) {
-      active.push(engineMap[key]);
-    }
-  }
-  return active;
+  return [];
 }
 
 async function fetchRelatedSearches(query: string): Promise<string[]> {
   try {
-    const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`);
-    const data = await res.json() as [string, string[]];
-    return (data[1] || []).filter((s: string) => s.toLowerCase() !== query.toLowerCase()).slice(0, 8);
+    const res = await fetch(
+      `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`,
+    );
+    const data = (await res.json()) as [string, string[]];
+    return (data[1] || [])
+      .filter((s: string) => s.toLowerCase() !== query.toLowerCase())
+      .slice(0, 8);
   } catch {
     return [];
   }
 }
 
-async function fetchKnowledgePanel(query: string): Promise<KnowledgePanel | null> {
+async function fetchKnowledgePanel(
+  query: string,
+): Promise<KnowledgePanel | null> {
   try {
     const params = new URLSearchParams({
       action: "query",
@@ -137,18 +159,42 @@ async function fetchKnowledgePanel(query: string): Promise<KnowledgePanel | null
       format: "json",
       redirects: "1",
     });
-    const res = await fetch(`https://en.wikipedia.org/w/api.php?${params.toString()}`, {
-      headers: { "Api-User-Agent": "degoog/1.0" },
-    });
-    const data = await res.json() as { query: { pages: Record<string, { title: string; extract?: string; thumbnail?: { source: string }; fullurl?: string; pageid: number }> } };
+    const res = await fetch(
+      `https://en.wikipedia.org/w/api.php?${params.toString()}`,
+      {
+        headers: { "Api-User-Agent": "degoog/1.0" },
+      },
+    );
+    const data = (await res.json()) as {
+      query: {
+        pages: Record<
+          string,
+          {
+            title: string;
+            extract?: string;
+            thumbnail?: { source: string };
+            fullurl?: string;
+            pageid: number;
+          }
+        >;
+      };
+    };
     const pages = data.query.pages;
     const page = Object.values(pages)[0];
-    if (!page || page.pageid === undefined || (page as any).missing !== undefined || !page.extract) return null;
+    if (
+      !page ||
+      page.pageid === undefined ||
+      (page as any).missing !== undefined ||
+      !page.extract
+    )
+      return null;
     return {
       title: page.title,
       description: page.extract.substring(0, 500),
       image: page.thumbnail?.source,
-      url: page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(page.title)}`,
+      url:
+        page.fullurl ||
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(page.title)}`,
     };
   } catch {
     return null;
@@ -158,7 +204,9 @@ async function fetchKnowledgePanel(query: string): Promise<KnowledgePanel | null
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Engine timeout")), ms)),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Engine timeout")), ms),
+    ),
   ]);
 }
 
@@ -182,28 +230,58 @@ export async function searchSingleEngine(
 ): Promise<{ results: SearchResult[]; timing: EngineTiming }> {
   const engine = resolveEngine(engineName);
   if (!engine) {
-    return { results: [], timing: { name: engineName, time: 0, resultCount: 0 } };
+    return {
+      results: [],
+      timing: { name: engineName, time: 0, resultCount: 0 },
+    };
   }
   const p = Math.max(1, Math.min(MAX_PAGE, Math.floor(page) || 1));
   const t0 = performance.now();
   try {
-    const results = await withTimeout(engine.executeSearch(query, p, timeFilter), ENGINE_TIMEOUT_MS);
+    const results = await withTimeout(
+      engine.executeSearch(query, p, timeFilter),
+      ENGINE_TIMEOUT_MS,
+    );
     const elapsed = Math.round(performance.now() - t0);
-    return { results, timing: { name: engine.name, time: elapsed, resultCount: results.length } };
+    return {
+      results,
+      timing: { name: engine.name, time: elapsed, resultCount: results.length },
+    };
   } catch {
     const elapsed = Math.round(performance.now() - t0);
-    return { results: [], timing: { name: engine.name, time: elapsed, resultCount: 0 } };
+    return {
+      results: [],
+      timing: { name: engine.name, time: elapsed, resultCount: 0 },
+    };
   }
 }
 
-export async function search(query: string, config: EngineConfig, type: SearchType = "all", page: number = 1, timeFilter: TimeFilter = "any"): Promise<SearchResponse> {
+export async function search(
+  query: string,
+  config: EngineConfig,
+  type: SearchType = "all",
+  page: number = 1,
+  timeFilter: TimeFilter = "any",
+): Promise<SearchResponse> {
   const start = performance.now();
   const p = Math.max(1, Math.min(MAX_PAGE, Math.floor(page) || 1));
 
-  const activeEngines = getEnginesForType(type, config);
+  const activeEngines =
+    type === "all"
+      ? await getActiveWebEngines(config)
+      : getEnginesForType(type, config);
 
   if (activeEngines.length === 0) {
-    return { results: [], atAGlance: null, query, totalTime: 0, type, engineTimings: [], relatedSearches: [], knowledgePanel: null };
+    return {
+      results: [],
+      atAGlance: null,
+      query,
+      totalTime: 0,
+      type,
+      engineTimings: [],
+      relatedSearches: [],
+      knowledgePanel: null,
+    };
   }
 
   const engineStarts = activeEngines.map(() => performance.now());
@@ -211,9 +289,12 @@ export async function search(query: string, config: EngineConfig, type: SearchTy
   const settled = await Promise.allSettled(
     activeEngines.map(async (engine, i) => {
       engineStarts[i] = performance.now();
-      const results = await withTimeout(engine.executeSearch(query, p, timeFilter), ENGINE_TIMEOUT_MS);
+      const results = await withTimeout(
+        engine.executeSearch(query, p, timeFilter),
+        ENGINE_TIMEOUT_MS,
+      );
       return results;
-    })
+    }),
   );
 
   const allResults: SearchResult[][] = [];
@@ -224,14 +305,23 @@ export async function search(query: string, config: EngineConfig, type: SearchTy
     const elapsed = Math.round(performance.now() - engineStarts[i]);
     if (result.status === "fulfilled") {
       allResults.push(result.value);
-      engineTimings.push({ name: activeEngines[i].name, time: elapsed, resultCount: result.value.length });
+      engineTimings.push({
+        name: activeEngines[i].name,
+        time: elapsed,
+        resultCount: result.value.length,
+      });
     } else {
-      engineTimings.push({ name: activeEngines[i].name, time: elapsed, resultCount: 0 });
+      engineTimings.push({
+        name: activeEngines[i].name,
+        time: elapsed,
+        resultCount: 0,
+      });
     }
   }
 
   const scored = aggregateAndScore(allResults);
-  const atAGlance = type === "all" && scored.length > 0 && scored[0].snippet ? scored[0] : null;
+  const atAGlance =
+    type === "all" && scored.length > 0 && scored[0].snippet ? scored[0] : null;
 
   let relatedSearches: string[] = [];
   let knowledgePanel: KnowledgePanel | null = null;
@@ -245,5 +335,14 @@ export async function search(query: string, config: EngineConfig, type: SearchTy
 
   const totalTime = Math.round(performance.now() - start);
 
-  return { results: scored, atAGlance, query, totalTime, type, engineTimings, relatedSearches, knowledgePanel };
+  return {
+    results: scored,
+    atAGlance,
+    query,
+    totalTime,
+    type,
+    engineTimings,
+    relatedSearches,
+    knowledgePanel,
+  };
 }
