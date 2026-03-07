@@ -13,6 +13,7 @@ import extensionsRouter from "./routes/extensions";
 import settingsAuthRouter from "./routes/settings-auth";
 import proxyRouter from "./routes/proxy";
 import pluginAssetsRouter from "./routes/plugin-assets";
+import swRouter from "./routes/sw";
 import pkg from "../package.json";
 
 const app = new Hono();
@@ -20,15 +21,6 @@ const app = new Hono();
 app.use("/public/*.js", async (c, next) => {
   await next();
   c.res.headers.set("Cache-Control", "no-cache");
-});
-app.get("/sw.js", async (c) => {
-  const body = await Bun.file("src/public/sw.js").text();
-  return new Response(body, {
-    headers: {
-      "Content-Type": "application/javascript",
-      "Service-Worker-Allowed": "/",
-    },
-  });
 });
 app.use("/public/*", serveStatic({ root: "src/" }));
 app.route("/", pagesRouter);
@@ -40,10 +32,16 @@ app.route("/", settingsAuthRouter);
 app.route("/", proxyRouter);
 app.route("/", themesRouter);
 app.route("/", pluginAssetsRouter);
+app.route("/", swRouter);
 
 const port = Number(process.env.DEGOOG_PORT) || 4444;
 
-Promise.all([initEngines(), initPlugins(), initSlotPlugins(), initThemes()]).then(() => {
+Promise.all([
+  initEngines(),
+  initPlugins(),
+  initSlotPlugins(),
+  initThemes(),
+]).then(() => {
   Bun.serve({ port, fetch: app.fetch });
   console.log(`degoog v${pkg.version} running on http://localhost:${port}`);
 });
