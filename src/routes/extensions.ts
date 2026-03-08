@@ -5,6 +5,7 @@ import {
   getCommandInstanceById,
 } from "../commands/registry";
 import { getSlotPlugins, getSlotPluginById } from "../slots/registry";
+import { getSearchBarActionExtensionMeta } from "../search-bar/registry";
 import { getThemeExtensionMeta } from "../themes/registry";
 import {
   getSettings,
@@ -42,26 +43,28 @@ async function getSlotExtensionMeta(): Promise<ExtensionMeta[]> {
 }
 
 router.get("/api/extensions", async (c) => {
-  const [engines, plugins, slotMeta, themes] = await Promise.all([
+  const [engines, plugins, slotMeta, searchBarMeta, themes] = await Promise.all([
     getEngineExtensionMeta(),
     getPluginExtensionMeta(),
     getSlotExtensionMeta(),
+    getSearchBarActionExtensionMeta(),
     getThemeExtensionMeta(),
   ]);
-  return c.json({ engines, plugins: [...plugins, ...slotMeta], themes });
+  return c.json({ engines, plugins: [...plugins, ...slotMeta, ...searchBarMeta], themes });
 });
 
 router.post("/api/extensions/:id/settings", async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json<Record<string, unknown>>();
 
-  const [engines, plugins, slotMeta, themes] = await Promise.all([
+  const [engines, plugins, slotMeta, searchBarMeta, themes] = await Promise.all([
     getEngineExtensionMeta(),
     getPluginExtensionMeta(),
     getSlotExtensionMeta(),
+    getSearchBarActionExtensionMeta(),
     getThemeExtensionMeta(),
   ]);
-  const ext = [...engines, ...plugins, ...slotMeta, ...themes].find(
+  const ext = [...engines, ...plugins, ...slotMeta, ...searchBarMeta, ...themes].find(
     (e) => e.id === id,
   );
 

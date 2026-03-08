@@ -1,5 +1,5 @@
-import type { SearchBarAction } from "../types";
-import { getSettings, asString } from "../plugin-settings";
+import type { SearchBarAction, ExtensionMeta } from "../types";
+import { getSettings, asString, maskSecrets } from "../plugin-settings";
 import { debug } from "../logger";
 
 interface StoredAction {
@@ -84,4 +84,31 @@ export async function getSearchBarActions(): Promise<SearchBarAction[]> {
 export async function reloadSearchBarActions(): Promise<void> {
   storedActions = [];
   await initSearchBarActions();
+}
+
+export async function getSearchBarActionExtensionMeta(): Promise<ExtensionMeta[]> {
+  const out: ExtensionMeta[] = [];
+  const seen = new Set<string>();
+  for (const { pluginId, action } of storedActions) {
+    if (seen.has(pluginId)) continue;
+    const schema = (action as SearchBarAction & { settingsSchema?: ExtensionMeta["settingsSchema"] }).settingsSchema ?? [];
+    if (schema.length === 0) continue;
+    seen.add(pluginId);
+    const id = `plugin-${pluginId}`;
+    const raw = await getSettings(id);
+    const settings = maskSecrets(raw, schema);
+    if (raw["disabled"]) settings["disabled"] = raw["disabled"];
+    const name = (action as SearchBarAction & { name?: string }).name ?? pluginId;
+    const description = (action as SearchBarAction & { description?: string }).description ?? "";
+    out.push({
+      id,
+      displayName: name,
+      description,
+      type: "plugin",
+      configurable: true,
+      settingsSchema: schema,
+      settings,
+    });
+  }
+  return out;
 }
