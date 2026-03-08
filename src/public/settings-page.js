@@ -113,10 +113,30 @@ async function initSettings() {
   }
 }
 
+window.addEventListener("extensions-saved", async () => {
+  try {
+    const res = await fetch("/api/extensions", {
+      headers: getStoredToken() ? { "x-settings-token": getStoredToken() } : {},
+    });
+    const allExtensions = await res.json();
+    initPluginsTab(allExtensions);
+  } catch (_) {}
+});
+
 async function init() {
   initTheme();
+  const params = new URLSearchParams(window.location.search);
+  const tokenFromUrl = params.get("token");
+  if (tokenFromUrl) {
+    sessionStorage.setItem(TOKEN_KEY, tokenFromUrl);
+    window.history.replaceState({}, "", "/settings");
+  }
   const auth = await checkAuth();
   if (auth.required && !auth.valid) {
+    if (auth.loginUrl) {
+      window.location.href = auth.loginUrl;
+      return;
+    }
     showAuthGate();
   } else {
     initSettings();

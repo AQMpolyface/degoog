@@ -3,3 +3,5 @@ dist
 .git
 *.md
 src/public/style.css
+documentation
+howto

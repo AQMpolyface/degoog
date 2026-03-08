@@ -231,9 +231,17 @@ export async function getPluginExtensionMeta(): Promise<ExtensionMeta[]> {
   const all = [...BUILTIN_COMMANDS, ...pluginCommands];
   const results: ExtensionMeta[] = [];
 
+  const middlewareSettings = await getSettings("middleware");
+
   for (const entry of all) {
     const schema = entry.instance.settingsSchema ?? [];
-    const rawSettings = (schema.length > 0 || entry.id.startsWith("plugin-")) ? await getSettings(entry.id) : {};
+    let rawSettings = (schema.length > 0 || entry.id.startsWith("plugin-")) ? await getSettings(entry.id) : {};
+    if (entry.id.startsWith("plugin-") && schema.some((f) => f.key === "useAsSettingsGate")) {
+      const slug = entry.id.slice(7);
+      if (middlewareSettings.settingsGate?.trim() === `plugin:${slug}`) {
+        rawSettings = { ...rawSettings, useAsSettingsGate: "true" };
+      }
+    }
     const maskedSettings = maskSecrets(rawSettings, schema);
     if (rawSettings["disabled"]) maskedSettings["disabled"] = rawSettings["disabled"];
     results.push({

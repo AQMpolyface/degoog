@@ -129,3 +129,35 @@ export interface PluginContext {
   template: string;
   readFile: (filename: string) => Promise<string>;
 }
+
+export type SearchBarActionType = "navigate" | "bang" | "custom";
+
+export interface SearchBarAction {
+  id: string;
+  label: string;
+  icon?: string;
+  type: SearchBarActionType;
+  url?: string;
+  trigger?: string;
+}
+
+export interface MiddlewareResult {
+  redirect: string;
+}
+
+export interface RequestMiddleware {
+  id: string;
+  name: string;
+  handle(
+    req: Request,
+    context?: { route?: string },
+  ): Response | Promise<Response | MiddlewareResult | null>;
+}
+
+export type PluginRouteMethod = "get" | "post" | "put" | "delete" | "patch";
+
+export interface PluginRoute {
+  method: PluginRouteMethod;
+  path: string;
+  handler: (req: Request) => Response | Promise<Response>;
+}

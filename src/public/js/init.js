@@ -8,6 +8,7 @@ import { initTheme } from "./theme.js";
 import { initTimeFilter } from "./timeFilter.js";
 import { initHomeFeed } from "./homeFeed.js";
 import { initInstallPrompt } from "./installPrompt.js";
+import { initSearchBarActions } from "./searchBarActions.js";
 
 function copyToClipboardFallback(text, onSuccess) {
   const el = document.createElement("textarea");
@@ -46,6 +47,7 @@ export function init() {
 
   initAutocomplete(searchInput, document.getElementById("ac-dropdown-home"), performSearch);
   initAutocomplete(resultsInput, document.getElementById("ac-dropdown-results"), performSearch);
+  initSearchBarActions();
   initLuckySlot();
   initTabs();
   initMediaPreview();

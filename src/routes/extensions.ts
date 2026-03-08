@@ -85,6 +85,17 @@ router.post("/api/extensions/:id/settings", async (c) => {
   const merged = mergeSecrets(filtered, existing, ext.settingsSchema);
   await setSettings(id, merged);
 
+  if (id.startsWith("plugin-") && ext.settingsSchema.some((f) => f.key === "useAsSettingsGate")) {
+    const slug = id.slice(7);
+    const gateValue = `plugin:${slug}`;
+    const mid = await getSettings("middleware");
+    if (merged.useAsSettingsGate === "true" || merged.useAsSettingsGate === true) {
+      await setSettings("middleware", { ...mid, settingsGate: gateValue });
+    } else if (mid.settingsGate?.trim() === gateValue) {
+      await setSettings("middleware", { ...mid, settingsGate: "" });
+    }
+  }
+
   const engineInstance = getEngineMap()[id];
   if (engineInstance?.configure) engineInstance.configure(merged);
 

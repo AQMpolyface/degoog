@@ -84,11 +84,12 @@ export function initPluginsTab(allExtensions) {
     input.addEventListener("change", async () => {
       const id = input.dataset.id;
       const disabled = !input.checked;
-      await fetch(`/api/extensions/${encodeURIComponent(id)}/settings`, {
+      const res = await fetch(`/api/extensions/${encodeURIComponent(id)}/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ disabled: disabled ? "true" : "" }),
       });
+      if (res.ok) window.dispatchEvent(new CustomEvent("extensions-saved"));
     });
   });
 

@@ -151,3 +151,37 @@
     background: var(--bg-hover);
   }
 }
+
+.search-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.search-bar-action-btn {
+  @include button-reset;
+  @include flex-center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+.search-bar-action-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.search-bar-action-label {
+  white-space: nowrap;
+}

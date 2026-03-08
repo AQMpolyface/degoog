@@ -4,6 +4,9 @@ import { createHash } from "crypto";
 import { removeSettings } from "../plugin-settings";
 import { reloadCommands } from "../commands/registry";
 import { initSlotPlugins, reloadSlotPlugins } from "../slots/registry";
+import { reloadSearchBarActions } from "../search-bar/registry";
+import { reloadPluginRoutes } from "../plugin-routes/registry";
+import { reloadMiddlewareRegistry } from "../middleware/registry";
 import { initThemes, reloadThemes } from "../themes/registry";
 import { initEngines, reloadEngines } from "../engines/registry";
 import type {
@@ -383,6 +386,9 @@ export async function installItem(
   if (type === "plugin") {
     await reloadSlotPlugins();
     await reloadCommands();
+    await reloadSearchBarActions();
+    await reloadPluginRoutes();
+    await reloadMiddlewareRegistry();
   } else if (type === "theme") {
     await reloadThemes();
   } else {
@@ -424,6 +430,9 @@ export async function uninstallItem(
   if (type === "plugin") {
     await reloadSlotPlugins();
     await reloadCommands();
+    await reloadSearchBarActions();
+    await reloadPluginRoutes();
+    await reloadMiddlewareRegistry();
   } else if (type === "theme") {
     await reloadThemes();
   } else {

@@ -137,6 +137,7 @@ async function save() {
     });
     if (!res.ok) throw new Error("Failed");
     statusEl.textContent = "Saved";
+    window.dispatchEvent(new CustomEvent("extensions-saved"));
     setTimeout(closeModal, 800);
   } catch {
     statusEl.textContent = "Save failed. Please try again.";

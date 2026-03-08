@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contributing — Degoog docs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1><a href="index.html">Degoog</a> — Contributing</h1>
+      <p>Adding built-in plugins and engines to the codebase.</p>
+    </header>
+
+    <nav class="doc-nav">
+      <h2>Docs</h2>
+      <ul>
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="plugins.html">Plugins</a></li>
+        <li><a href="themes.html">Themes</a></li>
+        <li><a href="engines.html">Search engines</a></li>
+        <li><a href="store.html">Store repositories</a></li>
+        <li><a href="aliases.html">Aliases</a></li>
+        <li><a href="env.html">Environment variables</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <h2>Adding a built-in bang command</h2>
+      <p>Built-in commands live in <code>src/commands/builtins/</code>. Each command is a folder (e.g. <code>help</code>, <code>weather</code>, <code>jellyfin</code>) with an <code>index.ts</code> (or <code>index.js</code>) that exports a <strong>BangCommand</strong> object — same contract as <a href="plugins.html#bang-commands">plugin bang commands</a> (name, description, trigger, execute, optional settingsSchema, configure, init, isConfigured, aliases).</p>
+      <p>Register the command in <code>src/commands/registry.ts</code> in the <code>BUILTIN_COMMANDS</code> array: add an entry with <code>id</code>, <code>trigger</code>, <code>displayName</code>, and <code>instance</code> (the command object).</p>
+
+      <h2>Adding a built-in engine</h2>
+      <p>Built-in engines are registered in <code>src/engines/</code>. Follow the same <strong>SearchEngine</strong> contract as <a href="engines.html">custom engines</a> (name, executeSearch, optional bangShortcut, settingsSchema, configure). Add the engine to the registry so it appears in Settings → Engines and in search.</p>
+    </main>
+  </div>
+</body>
+</html>

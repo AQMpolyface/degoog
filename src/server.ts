@@ -3,6 +3,9 @@ import { serveStatic } from "hono/bun";
 import { initEngines } from "./engines/registry";
 import { initPlugins } from "./commands/registry";
 import { initSlotPlugins } from "./slots/registry";
+import { initSearchBarActions } from "./search-bar/registry";
+import { initPluginRoutes } from "./plugin-routes/registry";
+import { initMiddlewareRegistry } from "./middleware/registry";
 import { initThemes } from "./themes/registry";
 import pagesRouter from "./routes/pages";
 import themesRouter from "./routes/themes";
@@ -15,6 +18,8 @@ import proxyRouter from "./routes/proxy";
 import pluginAssetsRouter from "./routes/plugin-assets";
 import storeRouter from "./routes/store";
 import swRouter from "./routes/sw";
+import searchBarRouter from "./routes/search-bar";
+import pluginRoutesRouter from "./routes/plugin-routes";
 import pkg from "../package.json";
 
 const app = new Hono();
@@ -35,6 +40,8 @@ app.route("/", themesRouter);
 app.route("/", pluginAssetsRouter);
 app.route("/", storeRouter);
 app.route("/", swRouter);
+app.route("/", searchBarRouter);
+app.route("/", pluginRoutesRouter);
 
 const port = Number(process.env.DEGOOG_PORT) || 4444;
 
@@ -42,6 +49,9 @@ Promise.all([
   initEngines(),
   initPlugins(),
   initSlotPlugins(),
+  initSearchBarActions(),
+  initPluginRoutes(),
+  initMiddlewareRegistry(),
   initThemes(),
 ]).then(() => {
   Bun.serve({ port, fetch: app.fetch });

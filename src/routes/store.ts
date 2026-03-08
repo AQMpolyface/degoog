@@ -24,7 +24,7 @@ function getStoreToken(c: { req: { header: (n: string) => string | undefined; qu
 }
 
 router.get("/api/store/repos", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const repos = await getRepos();
@@ -32,7 +32,7 @@ router.get("/api/store/repos", async (c) => {
 });
 
 router.post("/api/store/repos", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const body = await c.req.json<{ url?: string }>();
@@ -48,7 +48,7 @@ router.post("/api/store/repos", async (c) => {
 });
 
 router.delete("/api/store/repos", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const body = (await c.req.json<{ url?: string }>().catch(() => ({}))) as { url?: string };
@@ -64,7 +64,7 @@ router.delete("/api/store/repos", async (c) => {
 });
 
 router.post("/api/store/repos/refresh", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const body = (await c.req.json<{ url?: string }>().catch(() => ({}))) as { url?: string };
@@ -83,7 +83,7 @@ router.post("/api/store/repos/refresh", async (c) => {
 });
 
 router.get("/api/store/items", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const items = await listRepoItems();
@@ -91,7 +91,7 @@ router.get("/api/store/items", async (c) => {
 });
 
 router.get("/api/store/items/:repoSlug", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const repoSlug = c.req.param("repoSlug");
@@ -103,7 +103,7 @@ router.get("/api/store/items/:repoSlug", async (c) => {
 });
 
 router.post("/api/store/install", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const body = await c.req.json<{ repoUrl?: string; itemPath?: string; type?: "plugin" | "theme" | "engine" }>();
@@ -124,7 +124,7 @@ router.post("/api/store/install", async (c) => {
 });
 
 router.post("/api/store/uninstall", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const body = await c.req.json<{ repoUrl?: string; itemPath?: string; type?: "plugin" | "theme" | "engine" }>();
@@ -145,7 +145,7 @@ router.post("/api/store/uninstall", async (c) => {
 });
 
 router.get("/api/store/installed", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const installed = await getInstalledItems();
@@ -153,7 +153,7 @@ router.get("/api/store/installed", async (c) => {
 });
 
 router.get("/api/store/screenshots/:repoSlug/:type/:item/:filename", async (c) => {
-  if (!validateSettingsToken(getStoreToken(c))) {
+  if (!(await validateSettingsToken(getStoreToken(c)))) {
     return c.json({ error: "Unauthorized" }, 401);
   }
   const repoSlug = c.req.param("repoSlug");

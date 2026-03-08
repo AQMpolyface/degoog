@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Degoog — Documentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Degoog — Documentation</h1>
+      <p>How to customise search, plugins, themes, engines, and the settings gate.</p>
+    </header>
+
+    <nav class="doc-nav">
+      <h2>Docs</h2>
+      <ul>
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="plugins.html">Plugins</a></li>
+        <li><a href="themes.html">Themes</a></li>
+        <li><a href="engines.html">Search engines</a></li>
+        <li><a href="store.html">Store repositories</a></li>
+        <li><a href="aliases.html">Aliases</a></li>
+        <li><a href="env.html">Environment variables</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <h2>Overview</h2>
+      <p>Degoog can be customised in several ways:</p>
+      <ul>
+        <li><strong><a href="plugins.html">Plugins</a></strong> — Bang commands (<code>!weather London</code>), result slots, search bar buttons, your own API routes, and request middleware (e.g. custom settings login).</li>
+        <li><strong><a href="themes.html">Themes</a></strong> — Override CSS and optionally the home/search HTML.</li>
+        <li><strong><a href="engines.html">Search engines</a></strong> — Add custom search backends (web, images, video).</li>
+        <li><strong><a href="store.html">Store repositories</a></strong> — Add git repos in Settings → Store and install plugins, themes, and engines from them.</li>
+        <li><strong><a href="aliases.html">Aliases</a></strong> — Custom <code>!alias</code> → <code>!command</code> mappings.</li>
+      </ul>
+      <p>Settings and extension config are stored in <code>data/plugin-settings.json</code>. Plugin code lives in <code>data/plugins/</code>, themes in <code>data/themes/</code>, engines in <code>data/engines/</code>.</p>
+      <p>Official extensions repository: <a href="https://github.com/fccview/fccview-degoog-extensions" class="external" target="_blank" rel="noopener">fccview-degoog-extensions</a> — add <code>https://github.com/fccview/fccview-degoog-extensions.git</code> in Settings → Store to install plugins, themes, and engines.</p>
+    </main>
+  </div>
+</body>
+</html>
