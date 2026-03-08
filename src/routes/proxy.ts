@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getSettings } from "../plugin-settings";
+import { getSettings, asString } from "../plugin-settings";
 import {
   outgoingFetch,
   isUrlAllowedForOutgoing,
@@ -44,9 +44,8 @@ router.get("/api/proxy/image", async (c) => {
 
   if (authId) {
     const stored = await getSettings(authId);
-    if (stored["apiKey"]) {
-      headers["X-Emby-Token"] = stored["apiKey"];
-    }
+    const apiKey = asString(stored["apiKey"]);
+    if (apiKey) headers["X-Emby-Token"] = apiKey;
   }
 
   const controller = new AbortController();

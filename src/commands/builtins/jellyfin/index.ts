@@ -1,5 +1,5 @@
 import type { BangCommand, CommandContext, CommandResult, SettingField } from "../../../types";
-import { getSettings } from "../../../plugin-settings";
+import { getSettings, asString } from "../../../plugin-settings";
 
 export const JELLYFIN_ID = "jellyfin";
 
@@ -46,8 +46,8 @@ export const jellyfinCommand: BangCommand = {
 
   async execute(args: string, context?: CommandContext): Promise<CommandResult> {
     const stored = await getSettings(JELLYFIN_ID);
-    const jellyfinUrl = stored["url"] ?? "";
-    const apiKey = stored["apiKey"] ?? "";
+    const jellyfinUrl = asString(stored["url"]);
+    const apiKey = asString(stored["apiKey"]);
 
     if (!jellyfinUrl || !apiKey) {
       return {

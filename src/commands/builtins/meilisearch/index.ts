@@ -1,5 +1,5 @@
 import type { BangCommand, CommandContext, CommandResult, SettingField } from "../../../types";
-import { getSettings } from "../../../plugin-settings";
+import { getSettings, asString } from "../../../plugin-settings";
 
 export const MEILISEARCH_ID = "meilisearch";
 
@@ -100,13 +100,13 @@ export const meilisearchCommand: BangCommand = {
 
   async execute(args: string, context?: CommandContext): Promise<CommandResult> {
     const stored = await getSettings(MEILISEARCH_ID);
-    const meiliUrl = stored["url"] ?? "";
-    const apiKey = stored["apiKey"] ?? "";
-    const indexes = (stored["indexes"] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-    const titleField = stored["titleField"] || "title";
-    const urlField = stored["urlField"] || "url";
-    const contentField = stored["contentField"] || "content";
-    const thumbnailField = stored["thumbnailField"] || "thumbnail";
+    const meiliUrl = asString(stored["url"]);
+    const apiKey = asString(stored["apiKey"]);
+    const indexes = asString(stored["indexes"]).split(",").map((s: string) => s.trim()).filter(Boolean);
+    const titleField = asString(stored["titleField"]) || "title";
+    const urlField = asString(stored["urlField"]) || "url";
+    const contentField = asString(stored["contentField"]) || "content";
+    const thumbnailField = asString(stored["thumbnailField"]) || "thumbnail";
 
     if (!meiliUrl || indexes.length === 0) {
       return {

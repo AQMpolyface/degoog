@@ -1,5 +1,5 @@
 import type { SlotPlugin, SlotPanelPosition, PluginContext } from "../types";
-import { getSettings } from "../plugin-settings";
+import { getSettings, settingsAsStrings } from "../plugin-settings";
 import { addPluginCss, registerPluginScript } from "../plugin-assets";
 import { debug } from "../logger";
 
@@ -72,7 +72,7 @@ export async function initSlotPlugins(): Promise<void> {
         if (slot.settingsSchema?.length && slot.configure) {
           try {
             const stored = await getSettings(slotSettingsId);
-            if (Object.keys(stored).length > 0) slot.configure(stored);
+            if (Object.keys(stored).length > 0) slot.configure(settingsAsStrings(stored));
           } catch (err) {
             debug("slots", `Failed to configure slot plugin: ${slot.id}`, err);
           }

@@ -1,5 +1,5 @@
 import type { SettingField } from "../../../types";
-import { getSettings } from "../../../plugin-settings";
+import { getSettings, asString } from "../../../plugin-settings";
 
 export const AI_SUMMARY_ID = "ai-summary";
 
@@ -56,12 +56,12 @@ export interface AISummarySettings {
 
 export async function getAISummarySettings(): Promise<AISummarySettings> {
   const stored = await getSettings(AI_SUMMARY_ID);
-  const timeoutSeconds = parseFloat(stored["timeoutSeconds"] || "") || 30;
+  const timeoutSeconds = parseFloat(asString(stored["timeoutSeconds"]) || "") || 30;
   return {
-    enabled: stored["enabled"] === "true",
-    baseUrl: stored["baseUrl"] || "",
-    model: stored["model"] || "",
-    apiKey: stored["apiKey"] || "",
+    enabled: asString(stored["enabled"]) === "true",
+    baseUrl: asString(stored["baseUrl"]),
+    model: asString(stored["model"]),
+    apiKey: asString(stored["apiKey"]),
     timeoutMs: Math.max(5, timeoutSeconds) * 1000,
   };
 }

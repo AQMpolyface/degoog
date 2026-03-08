@@ -1,3 +1,8 @@
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .main.has-feed {
   justify-content: flex-start;
   margin-top: 0;
@@ -5,13 +10,85 @@
   padding-bottom: 24px;
 }
 
-.home-news-feed:not(:empty) {
+.home-news-feed {
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 584px;
   margin: 24px auto 0;
   gap: 16px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.skeleton-feed {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 16px;
+}
+
+.skeleton-feed-card {
+  background: var(--bg-light);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-feed-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(
+    90deg,
+    var(--bg-light) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-feed-body {
+  padding: 10px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-feed-line {
+  background: linear-gradient(
+    90deg,
+    var(--bg-light) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+  height: 12px;
+
+  &.skeleton-feed-source {
+    width: 100px;
+  }
+
+  &.skeleton-feed-title {
+    height: 16px;
+    width: 85%;
+  }
+}
+
+@keyframes home-feed-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .home-feed-card {
@@ -22,6 +99,17 @@
   text-decoration: none;
   color: inherit;
   transition: background 0.15s;
+  animation: home-feed-fade-in 0.4s ease-out backwards;
+
+  &:nth-child(1) { animation-delay: 0.02s; }
+  &:nth-child(2) { animation-delay: 0.06s; }
+  &:nth-child(3) { animation-delay: 0.1s; }
+  &:nth-child(4) { animation-delay: 0.14s; }
+  &:nth-child(5) { animation-delay: 0.18s; }
+  &:nth-child(6) { animation-delay: 0.22s; }
+  &:nth-child(7) { animation-delay: 0.26s; }
+  &:nth-child(8) { animation-delay: 0.3s; }
+  &:nth-child(n+9) { animation-delay: 0.34s; }
 
   &:active {
     background: var(--bg-hover);

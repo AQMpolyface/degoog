@@ -56,6 +56,17 @@ async function loadMore(container) {
 
 const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
 
+function skeletonFeedCards(count = 4) {
+  return `<div class="skeleton-feed" aria-hidden="true">${Array.from({ length: count }, () => `
+    <div class="skeleton-feed-card">
+      <div class="skeleton-feed-image"></div>
+      <div class="skeleton-feed-body">
+        <div class="skeleton-feed-line skeleton-feed-source"></div>
+        <div class="skeleton-feed-line skeleton-feed-title"></div>
+      </div>
+    </div>`).join("")}</div>`;
+}
+
 export async function initHomeFeed() {
   const container = document.getElementById("home-news-feed");
   const main = document.getElementById("main-home");
@@ -67,15 +78,24 @@ export async function initHomeFeed() {
     return;
   }
 
-  if (!isDesktop()) main.classList.add("has-feed");
+  if (!isDesktop()) {
+    main.classList.add("has-feed");
+    container.innerHTML = skeletonFeedCards();
+    container.classList.add("home-news-feed--loading");
+  }
 
   try {
     const items = await fetchPage(1);
     if (items.length === 0) {
-      if (!isDesktop()) main.classList.remove("has-feed");
+      if (!isDesktop()) {
+        main.classList.remove("has-feed");
+        container.innerHTML = "";
+        container.classList.remove("home-news-feed--loading");
+      }
       return;
     }
 
+    if (!isDesktop()) container.classList.remove("home-news-feed--loading");
     container.innerHTML = items.map(renderCard).join("") +
       `<div class="home-feed-sentinel"></div>`;
     feedPage = 2;
@@ -86,6 +106,10 @@ export async function initHomeFeed() {
     }, { rootMargin: "400px" });
     observer.observe(sentinel);
   } catch {
-    if (!isDesktop()) main.classList.remove("has-feed");
+    if (!isDesktop()) {
+      main.classList.remove("has-feed");
+      container.innerHTML = "";
+      container.classList.remove("home-news-feed--loading");
+    }
   }
 }

@@ -7,7 +7,7 @@ import { jellyfinCommand, JELLYFIN_ID } from "./builtins/jellyfin/index";
 import { meilisearchCommand, MEILISEARCH_ID } from "./builtins/meilisearch/index";
 import { AI_SUMMARY_ID, aiSummarySettingsSchema } from "./builtins/ai-summary/index";
 import { getEngineMap as getSearchEngineMap } from "../engines/registry";
-import { getSettings, maskSecrets } from "../plugin-settings";
+import { getSettings, maskSecrets, settingsAsStrings, asString } from "../plugin-settings";
 import { addPluginCss, registerPluginScript } from "../plugin-assets";
 import { debug } from "../logger";
 
@@ -125,7 +125,7 @@ export async function initPlugins(): Promise<void> {
 
         if (instance.configure && instance.settingsSchema?.length) {
           const stored = await getSettings(id);
-          if (Object.keys(stored).length > 0) instance.configure(stored);
+          if (Object.keys(stored).length > 0) instance.configure(settingsAsStrings(stored));
         }
         pluginCommands.push({
           id,
@@ -238,7 +238,7 @@ export async function getPluginExtensionMeta(): Promise<ExtensionMeta[]> {
     let rawSettings = (schema.length > 0 || entry.id.startsWith("plugin-")) ? await getSettings(entry.id) : {};
     if (entry.id.startsWith("plugin-") && schema.some((f) => f.key === "useAsSettingsGate")) {
       const slug = entry.id.slice(7);
-      if (middlewareSettings.settingsGate?.trim() === `plugin:${slug}`) {
+      if (asString(middlewareSettings.settingsGate).trim() === `plugin:${slug}`) {
         rawSettings = { ...rawSettings, useAsSettingsGate: "true" };
       }
     }

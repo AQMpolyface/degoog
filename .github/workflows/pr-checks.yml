@@ -45,3 +45,6 @@ jobs:
 
       - name: This will totally fail if you only use AI
         run: bun run typecheck
+
+      - name: Run tests
+        run: bun run test

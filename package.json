@@ -9,7 +9,8 @@
     "stop": "kill $(lsof -t -i:4444)",
     "start": "bun run src/server.ts",
     "start:dev": "DEGOOG_PORT=4445 bun run src/server.ts --debug",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

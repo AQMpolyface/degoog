@@ -7,6 +7,21 @@ const SETTINGS_PATH =
 
 export type SettingValue = string | string[];
 
+export function asString(v: SettingValue | undefined): string {
+  if (v === undefined || v === null) return "";
+  return typeof v === "string" ? v : (v[0] ?? "");
+}
+
+export function settingsAsStrings(
+  settings: Record<string, SettingValue>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(settings)) {
+    out[k] = asString(v);
+  }
+  return out;
+}
+
 type PluginSettingsStore = Record<string, Record<string, SettingValue>>;
 
 let cache: PluginSettingsStore | null = null;

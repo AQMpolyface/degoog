@@ -1,7 +1,7 @@
 import { readdir, readFile, mkdir } from "fs/promises";
 import { join } from "path";
 import * as sass from "sass";
-import { getSettings, setSettings, maskSecrets } from "../plugin-settings";
+import { getSettings, setSettings, maskSecrets, asString } from "../plugin-settings";
 import { debug } from "../logger";
 import type { SettingField, ExtensionMeta } from "../types";
 
@@ -60,7 +60,7 @@ async function compileThemeCss(
 
 async function loadActiveThemeId(): Promise<string | null> {
   const theme = await getSettings(THEME_SETTINGS_ID);
-  const active = theme.active?.trim();
+  const active = asString(theme.active).trim();
   return active || null;
 }
 

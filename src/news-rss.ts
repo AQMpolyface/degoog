@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
 import type { SearchResult } from "./types";
 import { debug } from "./logger";
-import { getSettings, setSettings } from "./plugin-settings";
+import { getSettings, setSettings, asString } from "./plugin-settings";
 
 const NEWS_RSS_SETTINGS_ID = "news-rss";
 const URLS_KEY = "urls";
@@ -250,8 +250,8 @@ export async function getNewsFeedUrls(): Promise<string[]> {
 
 export async function getSavedNewsFeedUrls(): Promise<string[]> {
   const settings = await getSettings(NEWS_RSS_SETTINGS_ID);
-  const raw = settings[URLS_KEY];
-  if (!raw || raw.trim() === "") return [];
+  const raw = asString(settings[URLS_KEY]);
+  if (!raw.trim()) return [];
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (Array.isArray(parsed)) {
@@ -289,7 +289,8 @@ export async function searchNews(
   page: number,
   feedUrls?: string[],
 ): Promise<SearchResult[]> {
-  const urls = feedUrls ?? (await getNewsFeedUrls());
+  const urls =
+    feedUrls && feedUrls.length > 0 ? feedUrls : await getNewsFeedUrls();
   if (urls.length === 0) return [];
   const allItems = await fetchAllFeeds(urls);
   const q = query.trim().toLowerCase();

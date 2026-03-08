@@ -1,5 +1,5 @@
 import type { SearchBarAction } from "../types";
-import { getSettings } from "../plugin-settings";
+import { getSettings, asString } from "../plugin-settings";
 import { debug } from "../logger";
 
 interface StoredAction {
@@ -75,7 +75,7 @@ export async function getSearchBarActions(): Promise<SearchBarAction[]> {
   for (const { pluginId, action } of storedActions) {
     const settings = await getSettings(`plugin-${pluginId}`);
     if (settings["disabled"] === "true") continue;
-    const label = (settings.buttonLabel ?? "").trim() || action.label;
+    const label = asString(settings.buttonLabel).trim() || action.label;
     out.push({ ...action, label });
   }
   return out;

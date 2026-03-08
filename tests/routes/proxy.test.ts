@@ -1,0 +1,24 @@
+import { describe, test, expect, beforeAll } from "bun:test";
+
+let proxyRouter: { request: (req: Request | string) => Response | Promise<Response> };
+
+beforeAll(async () => {
+  const mod = await import("../../src/routes/proxy");
+  proxyRouter = mod.default;
+});
+
+describe("routes/proxy", () => {
+  test("GET /api/proxy/image without url returns 400", async () => {
+    const res = await proxyRouter.request(
+      "http://localhost/api/proxy/image",
+    );
+    expect(res.status).toBe(400);
+  });
+
+  test("GET /api/proxy/image with invalid url returns 400", async () => {
+    const res = await proxyRouter.request(
+      "http://localhost/api/proxy/image?url=not-a-valid-url",
+    );
+    expect(res.status).toBe(400);
+  });
+});

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
-import { getSettings, setSettings } from "../plugin-settings";
+import { getSettings, setSettings, asString } from "../plugin-settings";
 import { getMiddleware } from "../middleware/registry";
 
 const DEGOOG_SETTINGS_ID = "degoog-settings";
@@ -83,8 +83,8 @@ async function getSelectedMiddlewareForSettingsGate(): Promise<
   ReturnType<typeof getMiddleware>
 > {
   const settings = await getSettings(MIDDLEWARE_SETTINGS_ID);
-  const value = settings[SETTINGS_GATE_KEY]?.trim();
-  if (!value?.startsWith("plugin:")) return null;
+  const value = asString(settings[SETTINGS_GATE_KEY]).trim();
+  if (!value.startsWith("plugin:")) return null;
   const id = value.slice(7);
   return getMiddleware(id);
 }
@@ -92,7 +92,7 @@ async function getSelectedMiddlewareForSettingsGate(): Promise<
 async function isAuthRequired(): Promise<boolean> {
   if (isPasswordRequired()) return true;
   const settings = await getSettings(MIDDLEWARE_SETTINGS_ID);
-  const gate = settings[SETTINGS_GATE_KEY]?.trim();
+  const gate = asString(settings[SETTINGS_GATE_KEY]).trim();
   return !!gate;
 }
 
