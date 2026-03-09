@@ -1,9 +1,11 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let swRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let swRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/sw");
+  const mod = await import("../../src/server/routes/sw");
   swRouter = mod.default;
 });
 

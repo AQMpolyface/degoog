@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach } from "bun:test";
 import {
   setOutgoingAllowlist,
   isUrlAllowedForOutgoing,
-} from "../../src/outgoing";
+} from "../../src/server/outgoing";
 
 describe("outgoing", () => {
   beforeEach(() => {

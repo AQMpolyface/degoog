@@ -5,7 +5,7 @@ import {
   registerPluginScript,
   getPluginScriptFolders,
   getScriptFolderSource,
-} from "../src/plugin-assets";
+} from "../src/server/plugin-assets";
 
 describe("plugin-assets", () => {
   test("addPluginCss and getAllPluginCss", () => {

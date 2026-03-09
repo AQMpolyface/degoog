@@ -4,7 +4,7 @@ import {
   getThemes,
   getActiveTheme,
   getActiveThemeId,
-} from "../../src/extensions/themes/registry";
+} from "../../src/server/extensions/themes/registry";
 
 describe("themes registry", () => {
   beforeAll(async () => {

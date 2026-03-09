@@ -24,7 +24,7 @@ import storeRouter from "./routes/store";
 import swRouter from "./routes/sw";
 import searchBarRouter from "./routes/search-bar";
 import pluginRoutesRouter from "./routes/plugin-routes";
-import pkg from "../package.json";
+import pkg from "../../package.json";
 
 const app = new Hono();
 

@@ -1,13 +1,13 @@
 import { describe, test, expect, beforeAll } from "bun:test";
-import { helpCommand } from "../../src/extensions/commands/builtins/help/index";
-import { uuidCommand } from "../../src/extensions/commands/builtins/uuid/index";
+import { helpCommand } from "../../src/server/extensions/commands/builtins/help/index";
+import { uuidCommand } from "../../src/server/extensions/commands/builtins/uuid/index";
 
 describe("commands builtins", () => {
   beforeAll(async () => {
     const { initPlugins } =
-      await import("../../src/extensions/commands/registry");
+      await import("../../src/server/extensions/commands/registry");
     const { initEngines } =
-      await import("../../src/extensions/engines/registry");
+      await import("../../src/server/extensions/engines/registry");
     const orig = process.env.DEGOOG_PLUGINS_DIR;
     process.env.DEGOOG_PLUGINS_DIR = "/nonexistent";
     process.env.DEGOOG_ENGINES_DIR = "/nonexistent";

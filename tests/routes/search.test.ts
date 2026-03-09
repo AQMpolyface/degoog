@@ -1,9 +1,11 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let searchRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let searchRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/search");
+  const mod = await import("../../src/server/routes/search");
   searchRouter = mod.default;
 });
 
@@ -46,13 +48,21 @@ describe("routes/search", () => {
       body: JSON.stringify({
         query: "test",
         results: [
-          { title: "T", url: "https://example.com", snippet: "S", score: 1, sources: ["x"] },
+          {
+            title: "T",
+            url: "https://example.com",
+            snippet: "S",
+            score: 1,
+            sources: ["x"],
+          },
         ],
       }),
     });
     const res = await searchRouter.request(req);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual(expect.objectContaining({ panels: expect.any(Array) }));
+    expect(body).toEqual(
+      expect.objectContaining({ panels: expect.any(Array) }),
+    );
   });
 });

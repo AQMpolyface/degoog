@@ -1,9 +1,11 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let storeRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let storeRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/store");
+  const mod = await import("../../src/server/routes/store");
   storeRouter = mod.default;
 });
 

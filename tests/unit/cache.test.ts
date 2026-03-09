@@ -7,8 +7,8 @@ import {
   TTL_MS,
   SHORT_TTL_MS,
   NEWS_TTL_MS,
-} from "../../src/cache";
-import type { SearchResponse } from "../../src/types";
+} from "../../src/server/cache";
+import type { SearchResponse } from "../../src/server/types";
 
 const mockResponse = (timings: { resultCount: number }[]): SearchResponse => ({
   results: [],

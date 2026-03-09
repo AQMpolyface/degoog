@@ -22,4 +22,4 @@ ENV PORT=4444
 EXPOSE 4444
 
 USER bun
-ENTRYPOINT ["bun", "run", "src/server.ts"]
+ENTRYPOINT ["bun", "run", "src/server/index.ts"]

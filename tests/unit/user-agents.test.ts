@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { getRandomUserAgent } from "../../src/user-agents";
+import { getRandomUserAgent } from "../../src/server/user-agents";
 
 describe("user-agents", () => {
   test("getRandomUserAgent returns a non-empty string", () => {

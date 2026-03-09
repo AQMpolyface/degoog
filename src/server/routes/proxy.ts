@@ -1,9 +1,6 @@
 import { Hono } from "hono";
 import { getSettings, asString } from "../plugin-settings";
-import {
-  outgoingFetch,
-  isUrlAllowedForOutgoing,
-} from "../outgoing";
+import { outgoingFetch, isUrlAllowedForOutgoing } from "../outgoing";
 
 const router = new Hono();
 
@@ -61,7 +58,8 @@ router.get("/api/proxy/image", async (c) => {
 
     if (!res.ok) return c.body("Upstream error", 502);
 
-    const contentType = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
+    const contentType =
+      res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
     if (!ALLOWED_CONTENT_TYPES.some((t) => contentType.startsWith(t))) {
       return c.body("Not an image", 400);
     }
@@ -90,7 +88,10 @@ router.get("/api/proxy/image", async (c) => {
 router.post("/api/proxy/fetch", async (c) => {
   let body: { url?: string; headers?: Record<string, string> };
   try {
-    body = await c.req.json<{ url?: string; headers?: Record<string, string> }>();
+    body = await c.req.json<{
+      url?: string;
+      headers?: Record<string, string>;
+    }>();
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
@@ -108,7 +109,8 @@ router.post("/api/proxy/fetch", async (c) => {
     });
     clearTimeout(timeout);
     const resBody = await res.arrayBuffer();
-    const contentType = res.headers.get("content-type") ?? "application/octet-stream";
+    const contentType =
+      res.headers.get("content-type") ?? "application/octet-stream";
     return new Response(resBody, {
       status: res.status,
       headers: { "Content-Type": contentType },

@@ -8,6 +8,7 @@ let slotPlugins: SlotPlugin[] = [];
 const builtinsDir = join(
   process.cwd(),
   "src",
+  "server",
   "extensions",
   "commands",
   "builtins",

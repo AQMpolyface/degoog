@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll } from "bun:test";
 import {
   initMiddlewareRegistry,
   getMiddleware,
-} from "../../src/extensions/middleware/registry";
+} from "../../src/server/extensions/middleware/registry";
 
 describe("middleware registry", () => {
   beforeAll(async () => {

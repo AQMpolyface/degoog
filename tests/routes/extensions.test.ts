@@ -1,15 +1,19 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let extensionsRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let extensionsRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/extensions");
+  const mod = await import("../../src/server/routes/extensions");
   extensionsRouter = mod.default;
 });
 
 describe("routes/extensions", () => {
   test("GET /api/extensions returns 200 and engines, plugins, themes", async () => {
-    const res = await extensionsRouter.request("http://localhost/api/extensions");
+    const res = await extensionsRouter.request(
+      "http://localhost/api/extensions",
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toHaveProperty("engines");

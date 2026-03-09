@@ -11,7 +11,7 @@ import {
 } from "../extensions/themes/registry";
 import { getAllPluginCss, getPluginScriptFolders } from "../plugin-assets";
 import { shouldServeSettingsGate } from "./settings-auth";
-import pkg from "../../package.json";
+import pkg from "../../../package.json";
 
 const router = new Hono();
 

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { DEFAULT_NEWS_FEED_URLS } from "../src/news-rss";
+import { DEFAULT_NEWS_FEED_URLS } from "../src/server/news-rss";
 
 describe("news-rss", () => {
   test("DEFAULT_NEWS_FEED_URLS is non-empty array of URLs", () => {

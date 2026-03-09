@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { DuckDuckGoEngine } from "../../src/extensions/engines/duckduckgo";
-import type { SearchResult } from "../../src/types";
+import { DuckDuckGoEngine } from "../../src/server/extensions/engines/duckduckgo";
+import type { SearchResult } from "../../src/server/types";
 
 const fixtureHtml = `
 <html>

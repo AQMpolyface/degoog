@@ -1,9 +1,11 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let pluginAssetsRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let pluginAssetsRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/plugin-assets");
+  const mod = await import("../../src/server/routes/plugin-assets");
   pluginAssetsRouter = mod.default;
 });
 

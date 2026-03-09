@@ -5,13 +5,14 @@ let themesRouter: {
 };
 
 beforeAll(async () => {
-  const { initThemes } = await import("../../src/extensions/themes/registry");
+  const { initThemes } =
+    await import("../../src/server/extensions/themes/registry");
   const orig = process.env.DEGOOG_THEMES_DIR;
   process.env.DEGOOG_THEMES_DIR = "/nonexistent-themes-dir";
   await initThemes();
   if (orig !== undefined) process.env.DEGOOG_THEMES_DIR = orig;
   else delete process.env.DEGOOG_THEMES_DIR;
-  const mod = await import("../../src/routes/themes");
+  const mod = await import("../../src/server/routes/themes");
   themesRouter = mod.default;
 });
 

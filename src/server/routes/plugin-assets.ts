@@ -18,8 +18,9 @@ const MIME_TYPES: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-const pluginsDir = process.env.DEGOOG_PLUGINS_DIR ?? join(process.cwd(), "data", "plugins");
-const builtinsDir = join(process.cwd(), "src", "commands", "builtins");
+const pluginsDir =
+  process.env.DEGOOG_PLUGINS_DIR ?? join(process.cwd(), "data", "plugins");
+const builtinsDir = join(process.cwd(), "src", "server", "extensions", "commands", "builtins");
 
 const router = new Hono();
 

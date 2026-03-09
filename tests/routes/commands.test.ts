@@ -6,13 +6,13 @@ let commandsRouter: {
 
 beforeAll(async () => {
   const { initPlugins } =
-    await import("../../src/extensions/commands/registry");
+    await import("../../src/server/extensions/commands/registry");
   const orig = process.env.DEGOOG_PLUGINS_DIR;
   process.env.DEGOOG_PLUGINS_DIR = "/nonexistent-plugins-dir";
   await initPlugins();
   if (orig !== undefined) process.env.DEGOOG_PLUGINS_DIR = orig;
   else delete process.env.DEGOOG_PLUGINS_DIR;
-  const mod = await import("../../src/routes/commands");
+  const mod = await import("../../src/server/routes/commands");
   commandsRouter = mod.default;
 });
 

@@ -1,17 +1,17 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let proxyRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let proxyRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/proxy");
+  const mod = await import("../../src/server/routes/proxy");
   proxyRouter = mod.default;
 });
 
 describe("routes/proxy", () => {
   test("GET /api/proxy/image without url returns 400", async () => {
-    const res = await proxyRouter.request(
-      "http://localhost/api/proxy/image",
-    );
+    const res = await proxyRouter.request("http://localhost/api/proxy/image");
     expect(res.status).toBe(400);
   });
 

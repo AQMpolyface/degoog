@@ -6,7 +6,7 @@ import {
   getEnginesForSearchType,
   getDefaultEngineConfig,
   getOutgoingAllowlist,
-} from "../../src/extensions/engines/registry";
+} from "../../src/server/extensions/engines/registry";
 
 describe("engines registry", () => {
   beforeAll(async () => {

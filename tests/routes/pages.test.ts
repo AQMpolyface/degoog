@@ -1,9 +1,11 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 
-let pagesRouter: { request: (req: Request | string) => Response | Promise<Response> };
+let pagesRouter: {
+  request: (req: Request | string) => Response | Promise<Response>;
+};
 
 beforeAll(async () => {
-  const mod = await import("../../src/routes/pages");
+  const mod = await import("../../src/server/routes/pages");
   pagesRouter = mod.default;
 });
 

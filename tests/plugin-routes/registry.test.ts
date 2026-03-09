@@ -3,7 +3,7 @@ import {
   initPluginRoutes,
   findPluginRoute,
   getPluginRoutes,
-} from "../../src/extensions/plugin-routes/registry";
+} from "../../src/server/extensions/plugin-routes/registry";
 
 describe("plugin-routes registry", () => {
   beforeAll(async () => {

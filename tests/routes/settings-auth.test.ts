@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { getSettingsTokenFromRequest } from "../../src/routes/settings-auth";
+import { getSettingsTokenFromRequest } from "../../src/server/routes/settings-auth";
 
 describe("routes/settings-auth", () => {
   test("getSettingsTokenFromRequest returns undefined when no cookie or header", () => {
@@ -7,10 +7,13 @@ describe("routes/settings-auth", () => {
     const c = {
       req: Object.assign(req, {
         header: (name: string) => req.headers.get(name) ?? undefined,
-        query: (name: string) => new URL(req.url).searchParams.get(name) ?? undefined,
+        query: (name: string) =>
+          new URL(req.url).searchParams.get(name) ?? undefined,
       }),
     };
-    const token = getSettingsTokenFromRequest(c as unknown as Parameters<typeof getSettingsTokenFromRequest>[0]);
+    const token = getSettingsTokenFromRequest(
+      c as unknown as Parameters<typeof getSettingsTokenFromRequest>[0],
+    );
     expect(token).toBeUndefined();
   });
 
@@ -21,10 +24,13 @@ describe("routes/settings-auth", () => {
     const c = {
       req: Object.assign(req, {
         header: (name: string) => req.headers.get(name) ?? undefined,
-        query: (name: string) => new URL(req.url).searchParams.get(name) ?? undefined,
+        query: (name: string) =>
+          new URL(req.url).searchParams.get(name) ?? undefined,
       }),
     };
-    const token = getSettingsTokenFromRequest(c as unknown as Parameters<typeof getSettingsTokenFromRequest>[0]);
+    const token = getSettingsTokenFromRequest(
+      c as unknown as Parameters<typeof getSettingsTokenFromRequest>[0],
+    );
     expect(token).toBe("abc123");
   });
 });
