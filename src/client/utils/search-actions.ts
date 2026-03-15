@@ -27,7 +27,7 @@ import {
   buildCommandGlanceHtml,
 } from "./search-utils";
 import { skeletonResults, skeletonGlance } from "../animations/skeleton";
-import type { Command, SearchResponse, ScoredResult } from "../types";
+import { SlotPanelPosition, type Command, type SearchResponse, type ScoredResult } from "../types";
 
 let commandsCache: Command[] | null = null;
 
@@ -153,7 +153,11 @@ export async function performSearch(
       if (glanceEl) glanceEl.innerHTML = "";
       if (sidebar) sidebar.innerHTML = "";
     } else {
-      renderSidebar(data, (q) => void performSearch(q));
+      const sidebarTop =
+        data.slotPanels?.filter((p) => p.position === SlotPanelPosition.KnowledgePanel) ?? [];
+      renderSidebar(data, (q) => void performSearch(q), {
+        sidebarTopPanels: sidebarTop,
+      });
       if (resolvedType === "all") {
         renderSlotPanels(data.slotPanels || []);
         void fetchGlancePanels(query, data.results, data.atAGlance);
@@ -198,7 +202,11 @@ async function _performSearchWithBang(
       if (glanceEl) glanceEl.innerHTML = "";
       if (sidebar) sidebar.innerHTML = "";
     } else {
-      renderSidebar(searchData, (q) => void performSearch(q));
+      const sidebarTop =
+        searchData.slotPanels?.filter((p) => p.position === SlotPanelPosition.KnowledgePanel) ?? [];
+      renderSidebar(searchData, (q) => void performSearch(q), {
+        sidebarTopPanels: sidebarTop,
+      });
       if (type === "all") {
         renderSlotPanels(searchData.slotPanels || []);
         void fetchSlotPanels(query);
@@ -432,7 +440,13 @@ export async function retryEngine(engineName: string): Promise<void> {
     const isMediaType =
       state.currentType === "images" || state.currentType === "videos";
     if (!isMediaType && state.currentData) {
-      renderSidebar(state.currentData, (q) => void performSearch(q));
+      const sidebarTop =
+        state.currentData.slotPanels?.filter(
+          (p) => p.position === SlotPanelPosition.KnowledgePanel,
+        ) ?? [];
+      renderSidebar(state.currentData, (q) => void performSearch(q), {
+        sidebarTopPanels: sidebarTop,
+      });
     }
   } catch { }
 }

@@ -1,5 +1,5 @@
 import { join } from "path";
-import type { SlotPlugin, SlotPanelPosition } from "../../types";
+import { SlotPanelPosition, type SlotPlugin } from "../../types";
 import {
   isDisabled,
 } from "../../utils/plugin-settings";
@@ -21,21 +21,27 @@ const builtinsDir = join(
 );
 
 function isSlotPlugin(val: unknown): val is SlotPlugin {
+  if (typeof val !== "object" || val === null) return false;
+  const slot = val as SlotPlugin;
+  const validPositions = new Set(Object.values(SlotPanelPosition));
+  const positionOk =
+    "position" in slot && validPositions.has(slot.position as SlotPanelPosition);
+  const slotPositionsOk =
+    !("slotPositions" in slot) ||
+    (Array.isArray(slot.slotPositions) &&
+      slot.slotPositions.length > 0 &&
+      slot.slotPositions.every((p) => validPositions.has(p)));
   return (
-    typeof val === "object" &&
-    val !== null &&
-    "id" in val &&
-    typeof (val as SlotPlugin).id === "string" &&
-    "name" in val &&
-    typeof (val as SlotPlugin).name === "string" &&
-    "position" in val &&
-    ["above-results", "below-results", "sidebar", "at-a-glance"].includes(
-      (val as SlotPlugin).position as SlotPanelPosition,
-    ) &&
-    "trigger" in val &&
-    typeof (val as SlotPlugin).trigger === "function" &&
-    "execute" in val &&
-    typeof (val as SlotPlugin).execute === "function"
+    "id" in slot &&
+    typeof slot.id === "string" &&
+    "name" in slot &&
+    typeof slot.name === "string" &&
+    positionOk &&
+    slotPositionsOk &&
+    "trigger" in slot &&
+    typeof slot.trigger === "function" &&
+    "execute" in slot &&
+    typeof slot.execute === "function"
   );
 }
 

@@ -1,5 +1,6 @@
 import { state } from "../../state";
 import { showResults, setActiveTab } from "../../utils/navigation";
+import { fetchSlotPanels } from "../../utils/search-utils";
 import {
   clearSlotPanels,
   renderSidebar,
@@ -10,7 +11,7 @@ import { skeletonResults } from "../../animations/skeleton";
 import { escapeHtml, cleanUrl } from "../../utils/dom";
 import { faviconUrl, proxyImageUrl } from "../../utils/url";
 import { buildPaginationHtml } from "../../utils/pagination";
-import type { ScoredResult, SearchResponse } from "../../types";
+import { SlotPanelPosition, type ScoredResult, type SearchResponse } from "../../types";
 
 export async function performTabSearch(
   query: string,
@@ -95,6 +96,11 @@ export async function performTabSearch(
     if (data.totalPages && data.totalPages > 1 && pagination) {
       _renderTabPagination(pagination, data.totalPages, page, query, tabId);
     }
+
+    const panels = await fetchSlotPanels(query);
+    renderSidebar(state.currentData, (q) => void performTabSearch(q, tabId), {
+      sidebarTopPanels: panels.filter((p) => p.position === SlotPanelPosition.KnowledgePanel),
+    });
   } catch {
     if (resultsMeta) resultsMeta.textContent = "";
     if (resultsList)

@@ -23,7 +23,12 @@ import {
   type SettingValue,
 } from "../utils/plugin-settings";
 import { getPluginCssIds, getPluginCssById } from "../utils/plugin-assets";
-import { ExtensionStoreType, type ExtensionMeta } from "../types";
+import {
+  ExtensionStoreType,
+  SLOT_POSITION_SETTING_KEY,
+  type ExtensionMeta,
+  type SettingField,
+} from "../types";
 
 const router = new Hono();
 
@@ -31,19 +36,39 @@ async function getSlotExtensionMeta(): Promise<ExtensionMeta[]> {
   const slots = getSlotPlugins();
   const out: ExtensionMeta[] = [];
   for (const slot of slots) {
-    const schema = slot.settingsSchema ?? [];
-    if (schema.length === 0) continue;
+    const baseSchema = slot.settingsSchema ?? [];
+    const hasPositionChoice = (slot.slotPositions?.length ?? 0) > 0;
+    if (baseSchema.length === 0 && !hasPositionChoice) continue;
+    const fullSchema: SettingField[] = [...baseSchema];
+    if (hasPositionChoice) {
+      fullSchema.push({
+        key: SLOT_POSITION_SETTING_KEY,
+        label: "Position",
+        type: "select",
+        options: [...slot.slotPositions!],
+        description: "Where the slot content appears (e.g. knowledge-panel replaces the default knowledge panel).",
+      });
+    }
     const id = slot.settingsId ?? `slot-${slot.id}`;
     const raw = await getSettings(id);
-    const settings = maskSecrets(raw, schema);
+    const settings = maskSecrets(raw, fullSchema);
     if (raw["disabled"]) settings["disabled"] = raw["disabled"];
+    if (hasPositionChoice) {
+      const stored = raw[SLOT_POSITION_SETTING_KEY];
+      const value =
+        (typeof stored === "string" ? stored : undefined) ?? slot.position;
+      settings[SLOT_POSITION_SETTING_KEY] =
+        slot.slotPositions!.includes(value as typeof slot.position)
+          ? value
+          : slot.position;
+    }
     out.push({
       id,
       displayName: slot.name,
       description: slot.description,
       type: ExtensionStoreType.Plugin,
       configurable: true,
-      settingsSchema: schema,
+      settingsSchema: fullSchema,
       settings,
     });
   }

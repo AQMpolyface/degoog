@@ -11,17 +11,21 @@ import {
   getSearchResultTabs,
   getSearchResultTabById,
 } from "../extensions/search-result-tabs/registry";
-import { getSettings, isDisabled } from "../utils/plugin-settings";
+import { asString, getSettings, isDisabled } from "../utils/plugin-settings";
 import { getClientIp } from "../utils/request";
 import { outgoingFetch } from "../utils/outgoing";
 import { checkRateLimit } from "../utils/rate-limit";
-import type {
-  EngineConfig,
-  SearchType,
-  TimeFilter,
-  SearchResponse,
-  SlotPanelResult,
-  ScoredResult,
+import {
+  SLOT_POSITION_SETTING_KEY,
+  SlotPanelPosition,
+  type EngineConfig,
+  type SlotPluginContext,
+  type SearchType,
+  type TimeFilter,
+  type SearchResponse,
+  type SlotPanelResult,
+  type ScoredResult,
+  type EngineTiming,
 } from "../types";
 
 const DEGOOG_SETTINGS_ID = "degoog-settings";
@@ -68,26 +72,38 @@ async function runSlotPlugins(
   query: string,
   clientIp?: string,
   results?: ScoredResult[],
-  options?: { excludePosition?: "at-a-glance" },
+  options?: { excludePosition?: SlotPanelPosition },
 ): Promise<SlotPanelResult[]> {
   const plugins = getSlotPlugins();
   const panels: SlotPanelResult[] = [];
   const exclude = options?.excludePosition;
   for (const plugin of plugins) {
-    if (exclude && plugin.position === exclude) continue;
+    const slotSettingsId = plugin.settingsId ?? `slot-${plugin.id}`;
+    let effectivePosition: SlotPanelPosition = plugin.position;
+    if (plugin.slotPositions?.length) {
+      const raw = await getSettings(slotSettingsId);
+      const chosen = asString(raw[SLOT_POSITION_SETTING_KEY]);
+      if (chosen && plugin.slotPositions.includes(chosen as SlotPanelPosition)) {
+        effectivePosition = chosen as SlotPanelPosition;
+      }
+    }
+    if (exclude && effectivePosition === exclude) continue;
     try {
-      const slotSettingsId = plugin.settingsId ?? `slot-${plugin.id}`;
       if (await isDisabled(slotSettingsId)) continue;
       const ok = await Promise.resolve(plugin.trigger(query.trim()));
       if (!ok) continue;
-      const context = { clientIp, results };
+      const context: SlotPluginContext = {
+        clientIp,
+        results,
+        fetch: outgoingFetch as SlotPluginContext["fetch"],
+      };
       const out = await plugin.execute(query, context);
       if (!out.html || !out.html.trim()) continue;
       panels.push({
         id: plugin.id,
         title: out.title,
         html: out.html,
-        position: plugin.position,
+        position: effectivePosition,
       });
     } catch { }
   }
@@ -131,7 +147,7 @@ router.get("/api/search", async (c) => {
       query.trim(),
       clientIp ?? undefined,
       response.results,
-      { excludePosition: "at-a-glance" },
+      { excludePosition: SlotPanelPosition.AtAGlance },
     );
     response = { ...response, slotPanels };
   }
@@ -146,7 +162,7 @@ router.get("/api/slots", async (c) => {
   if (!query || !query.trim()) return c.json({ panels: [] });
   const clientIp = getClientIp(c);
   const panels = await runSlotPlugins(query.trim(), clientIp, undefined, {
-    excludePosition: "at-a-glance",
+    excludePosition: SlotPanelPosition.AtAGlance,
   });
   return c.json({ panels });
 });
@@ -165,7 +181,7 @@ router.post("/api/slots/glance", async (c) => {
   }
   const clientIp = getClientIp(c);
   const glancePlugins = getSlotPlugins().filter(
-    (p) => p.position === "at-a-glance",
+    (p) => p.position === SlotPanelPosition.AtAGlance,
   );
   const panels: SlotPanelResult[] = [];
   for (const plugin of glancePlugins) {
@@ -174,10 +190,12 @@ router.post("/api/slots/glance", async (c) => {
       if (await isDisabled(slotSettingsId)) continue;
       const ok = await Promise.resolve(plugin.trigger(body.query!.trim()));
       if (!ok) continue;
-      const out = await plugin.execute(body.query!.trim(), {
+      const context: SlotPluginContext = {
         clientIp: clientIp ?? undefined,
         results: body.results,
-      });
+        fetch: outgoingFetch as SlotPluginContext["fetch"],
+      };
+      const out = await plugin.execute(body.query!.trim(), context);
       if (!out.html || !out.html.trim()) continue;
       panels.push({
         id: plugin.id,
