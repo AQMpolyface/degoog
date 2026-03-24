@@ -1,6 +1,9 @@
 import { Context, Hono } from "hono";
 import { existsSync } from "fs";
-import { validateSettingsToken } from "./settings-auth";
+import {
+  validateSettingsToken,
+  getSettingsTokenFromRequest,
+} from "./settings-auth";
 import { resolve, relative } from "path";
 
 import {
@@ -25,7 +28,7 @@ import { ExtensionStoreType } from "../types";
 const router = new Hono();
 
 function getStoreToken(c: Context): string | undefined {
-  return c.req.header("x-settings-token") ?? c.req.query("token");
+  return getSettingsTokenFromRequest(c);
 }
 
 const VALID_TYPES: ExtensionStoreType[] = Object.values(ExtensionStoreType);
