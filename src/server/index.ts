@@ -12,6 +12,11 @@ import { initSearchBarActions } from "./extensions/search-bar/registry";
 import { initPluginRoutes } from "./extensions/plugin-routes/registry";
 import { initMiddlewareRegistry } from "./extensions/middleware/registry";
 import { initThemes } from "./extensions/themes/registry";
+import {
+  isGlobalAuthRequired,
+  shouldServeGlobalGate,
+  isGlobalGateExemptPath,
+} from "./utils/auth";
 import pagesRouter from "./routes/pages";
 import themesRouter from "./routes/themes";
 import searchRouter from "./routes/search";
@@ -35,6 +40,16 @@ app.use("/public/*.js", async (c, next) => {
   c.res.headers.set("Cache-Control", "no-cache");
 });
 app.use("/public/*", serveStatic({ root: "src/" }));
+
+app.use("*", async (c, next) => {
+  if (!isGlobalAuthRequired()) return next();
+  const path = new URL(c.req.url).pathname;
+  if (isGlobalGateExemptPath(path)) return next();
+  if (await shouldServeGlobalGate(c)) {
+    return c.redirect("/api/settings/auth/global-gate", 302);
+  }
+  return next();
+});
 app.route("/", pagesRouter);
 app.route("/", searchRouter);
 app.route("/", commandsRouter);

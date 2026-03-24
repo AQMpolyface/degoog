@@ -41,7 +41,7 @@ export async function shouldServeSettingsGate(c: Context): Promise<boolean> {
 }
 
 function getPasswords(): string[] {
-  const raw = process.env.DEGOOG_SETTINGS_PASSWORDS ?? "";
+  const raw = process.env.DEGOOG_PASSWORDS ?? process.env.DEGOOG_SETTINGS_PASSWORDS ?? "";
   return raw
     .split(",")
     .map((p) => p.trim())
@@ -137,6 +137,17 @@ router.get("/api/settings/auth/callback", async (c) => {
   }
   if (result instanceof Response) return result;
   return c.redirect("/settings");
+});
+
+router.get("/api/settings/auth/global-gate", async (c) => {
+  const html = await Bun.file("src/public/global-gate.html").text();
+  const version = (await import("../../../package.json")).default.version;
+  return c.html(
+    html
+      .replaceAll("__APP_VERSION__", version)
+      .replace("__THEME_ATTRS__", "")
+      .replace("__THEME_CSS__", ""),
+  );
 });
 
 router.post("/api/settings/auth", async (c) => {

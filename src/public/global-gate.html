@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" __THEME_ATTRS__>
+  <head>
+    <script>
+      (function () {
+        var r = document.documentElement;
+        var t = localStorage.getItem("theme");
+        if (t === "light") r.setAttribute("data-theme", "light");
+        else if (t === "dark") r.setAttribute("data-theme", "dark");
+        else {
+          var m = window.matchMedia("(prefers-color-scheme: dark)");
+          r.setAttribute("data-theme", m.matches ? "dark" : "light");
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="degoog" />
+    <link
+      rel="icon"
+      href="/public/favicon/favicon.ico?v=__APP_VERSION__"
+      type="image/x-icon"
+    />
+    <title>Locked – degoog</title>
+    <link rel="stylesheet" href="/public/style.css?v=__APP_VERSION__" />
+    __THEME_CSS__
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background: var(--bg-color, #f5f5f5);
+        color: var(--text-color, #333);
+      }
+      .global-gate {
+        text-align: center;
+        padding: 2rem;
+        max-width: 400px;
+        width: 100%;
+      }
+      .global-gate-logo {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1.5rem;
+      }
+      .global-gate-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+      }
+      .global-gate-desc {
+        color: var(--text-muted, #666);
+        margin: 0 0 1.5rem 0;
+      }
+      .global-gate-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .global-gate-input {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 1px solid var(--border-color, #ddd);
+        border-radius: 8px;
+        background: var(--bg-secondary, #fff);
+        color: var(--text-color, #333);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .global-gate-input:focus {
+        border-color: var(--accent-color, #4285f4);
+      }
+      .global-gate-submit {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent-color, #4285f4);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .global-gate-submit:hover {
+        opacity: 0.9;
+      }
+      .global-gate-error {
+        color: var(--error-color, #d32f2f);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="global-gate">
+      <img
+        class="global-gate-logo"
+        src="/public/images/degoog-logo.png?v=__APP_VERSION__"
+        alt="degoog"
+      />
+      <h1 class="global-gate-title">degoog is locked</h1>
+      <p class="global-gate-desc">Enter the password to access this instance.</p>
+      <form class="global-gate-form" id="global-gate-form" autocomplete="off">
+        <input
+          class="global-gate-input"
+          type="password"
+          id="global-gate-input"
+          placeholder="Password"
+          autocomplete="current-password"
+          autofocus
+        />
+        <button class="global-gate-submit" type="submit">Unlock</button>
+      </form>
+      <p class="global-gate-error" id="global-gate-error"></p>
+    </div>
+    <script>
+      (function () {
+        var redirectTo = sessionStorage.getItem("global-gate-redirect") || "/";
+        var form = document.getElementById("global-gate-form");
+        var errorEl = document.getElementById("global-gate-error");
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var password = document.getElementById("global-gate-input").value;
+          errorEl.textContent = "";
+          try {
+            var res = await fetch("/api/settings/auth", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ password: password }),
+              credentials: "same-origin",
+            });
+            var data = await res.json();
+            if (data.ok && data.token) {
+              sessionStorage.removeItem("global-gate-redirect");
+              var target = redirectTo;
+              if (target.indexOf("?") === -1) {
+                target += "?token=" + data.token;
+              } else {
+                target += "&token=" + data.token;
+              }
+              window.location.href = target;
+            } else {
+              errorEl.textContent = "Incorrect password.";
+            }
+          } catch (err) {
+            errorEl.textContent = "Something went wrong. Please try again.";
+          }
+        });
+        sessionStorage.setItem("global-gate-redirect", window.location.pathname + window.location.search);
+      })();
+    </script>
+  </body>
+</html>
