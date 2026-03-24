@@ -5,7 +5,12 @@ export function isGlobalAuthRequired(): boolean {
   if (isPublicInstance()) return false;
   const v = process.env.DEGOOG_GLOBAL_AUTH ?? "";
   const t = v.trim().toLowerCase();
-  return t === "true" || t === "1";
+  if (t !== "true" && t !== "1") return false;
+  if (!isGlobalPasswordRequired()) {
+    console.warn("[degoog] DEGOOG_GLOBAL_AUTH is enabled but DEGOOG_PASSWORDS is not set. Access is unrestricted.");
+    return false;
+  }
+  return true;
 }
 
 export function getGlobalGatePasswords(): string[] {
@@ -19,7 +24,6 @@ export function isGlobalPasswordRequired(): boolean {
 
 export async function shouldServeGlobalGate(c: Context): Promise<boolean> {
   if (!isGlobalAuthRequired()) return false;
-  if (!isGlobalPasswordRequired()) return false;
   const { getSettingsTokenFromRequest, validateSettingsToken } = await import(
     "../routes/settings-auth"
   );
