@@ -71,8 +71,11 @@ export async function validateSettingsToken(
   token: string | undefined,
 ): Promise<boolean> {
   if (isPublicInstance()) return false;
-  const required = await isAuthRequired();
-  if (!required) return true;
+  const settingsRequired = await isAuthRequired();
+  if (!settingsRequired) {
+    const { isGlobalAuthRequired } = await import("../utils/auth");
+    if (!isGlobalAuthRequired()) return true;
+  }
   if (!token) return false;
   const expiresAt = validTokens.get(token);
   if (!expiresAt || Date.now() > expiresAt) {
