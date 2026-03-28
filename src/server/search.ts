@@ -36,11 +36,12 @@ const _normalizeUrl = (url: string): string => {
 const _mergeIntoMap = (
   urlMap: Map<string, ScoredResult>,
   results: SearchResult[],
+  multiplier = 1,
 ): void => {
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     const normalized = _normalizeUrl(r.url);
-    const positionScore = Math.max(10 - i, 1);
+    const positionScore = Math.max(10 - i, 1) * multiplier;
 
     if (urlMap.has(normalized)) {
       const existing = urlMap.get(normalized)!;
@@ -155,12 +156,12 @@ const _withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
   ]);
 };
 
-export const aggregateAndScore = (
-  allResults: SearchResult[][],
+export const scoreResults = (
+  allResults: { results: SearchResult[]; multiplier?: number }[],
 ): ScoredResult[] => {
   const urlMap = new Map<string, ScoredResult>();
-  for (const engineResults of allResults) {
-    _mergeIntoMap(urlMap, engineResults);
+  for (const { results, multiplier } of allResults) {
+    _mergeIntoMap(urlMap, results, multiplier ?? 1);
   }
   return _sortedFromMap(urlMap);
 };
@@ -191,7 +192,11 @@ const _buildAcceptLanguage = (lang?: string): string => {
   return `${lang},${lang}-${lang.toUpperCase()};q=0.9,en;q=0.8`;
 };
 
-const _makeEngineContext = (lang?: string, dateFrom?: string, dateTo?: string): EngineContext => ({
+const _makeEngineContext = (
+  lang?: string,
+  dateFrom?: string,
+  dateTo?: string,
+): EngineContext => ({
   fetch: outgoingFetch,
   lang: lang || undefined,
   dateFrom: dateFrom || undefined,
@@ -250,12 +255,15 @@ export const search = async (
   const start = performance.now();
   const p = Math.max(1, Math.min(MAX_PAGE, Math.floor(page) || 1));
 
-  const activeEngines =
+  const rawActiveEngines =
     type === "all"
       ? await getActiveWebEngines(config)
-      : getEnginesForSearchType(type, config);
+      : getEnginesForSearchType(type, config).map((instance) => ({
+          instance,
+          score: 1,
+        }));
 
-  if (activeEngines.length === 0) {
+  if (rawActiveEngines.length === 0) {
     return {
       results: [],
       atAGlance: null,
@@ -268,43 +276,43 @@ export const search = async (
     };
   }
 
-  const engineStarts = activeEngines.map(() => performance.now());
+  const engineStarts = rawActiveEngines.map(() => performance.now());
   const engineContext = _makeEngineContext(lang, dateFrom, dateTo);
 
   const settled = await Promise.allSettled(
-    activeEngines.map(async (engine, i) => {
+    rawActiveEngines.map(async ({ instance }, i) => {
       engineStarts[i] = performance.now();
       const results = await _withTimeout(
-        engine.executeSearch(query, p, timeFilter, engineContext),
+        instance.executeSearch(query, p, timeFilter, engineContext),
         ENGINE_TIMEOUT_MS,
       );
       return results;
     }),
   );
 
-  const allResults: SearchResult[][] = [];
+  const allResults: { results: SearchResult[]; multiplier: number }[] = [];
   const engineTimings: EngineTiming[] = [];
 
   for (let i = 0; i < settled.length; i++) {
     const result = settled[i];
     const elapsed = Math.round(performance.now() - engineStarts[i]);
     if (result.status === "fulfilled") {
-      allResults.push(result.value);
+      allResults.push({ results: result.value, multiplier: rawActiveEngines[i].score });
       engineTimings.push({
-        name: activeEngines[i].name,
+        name: rawActiveEngines[i].instance.name,
         time: elapsed,
         resultCount: result.value.length,
       });
     } else {
       engineTimings.push({
-        name: activeEngines[i].name,
+        name: rawActiveEngines[i].instance.name,
         time: elapsed,
         resultCount: 0,
       });
     }
   }
 
-  const scored = aggregateAndScore(allResults);
+  const scored = scoreResults(allResults);
   const atAGlance =
     type === "all" && scored.length > 0 && scored[0].snippet ? scored[0] : null;
 
