@@ -1,13 +1,59 @@
 import { describe, test, expect, beforeAll, afterAll, afterEach } from "bun:test";
 import { setSettings, removeSettings } from "../../src/server/utils/plugin-settings";
 import { outgoingFetch } from "../../src/server/utils/outgoing";
+import net from "node:net";
 
 const SETTINGS_ID = "degoog-settings";
 
+function createConnectProxy(): { server: net.Server; port: number; hits: string[]; close: () => void } {
+  const hits: string[] = [];
+  const server = net.createServer((clientSock) => {
+    let buf = "";
+    let handled = false;
+    const onData = (chunk: Buffer): void => {
+      if (handled) return;
+      buf += chunk.toString();
+      const headerEnd = buf.indexOf("\r\n\r\n");
+      if (headerEnd === -1) return;
+
+      handled = true;
+      clientSock.removeListener("data", onData);
+
+      const requestLine = buf.split("\r\n")[0];
+      const connectMatch = requestLine.match(/^CONNECT (.+):(\d+) HTTP/);
+
+      if (connectMatch) {
+        const targetHost = connectMatch[1];
+        const targetPort = Number(connectMatch[2]);
+        hits.push(`CONNECT ${targetHost}:${targetPort}`);
+
+        const targetSock = net.connect(targetPort, targetHost, () => {
+          clientSock.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+          clientSock.pipe(targetSock);
+          targetSock.pipe(clientSock);
+        });
+        targetSock.on("error", () => clientSock.destroy());
+      } else {
+        clientSock.destroy();
+      }
+    };
+    clientSock.on("data", onData);
+    clientSock.on("error", () => {});
+  });
+
+  server.listen(0);
+  const addr = server.address() as net.AddressInfo;
+  return {
+    server,
+    port: addr.port,
+    hits,
+    close: () => server.close(),
+  };
+}
+
 describe("outgoing proxy integration", () => {
   let targetServer: ReturnType<typeof Bun.serve>;
-  let proxyServer: ReturnType<typeof Bun.serve>;
-  let proxyHits: { method: string; url: string }[];
+  let proxy: ReturnType<typeof createConnectProxy>;
 
   beforeAll(() => {
     targetServer = Bun.serve({
@@ -17,52 +63,44 @@ describe("outgoing proxy integration", () => {
       },
     });
 
-    proxyHits = [];
-    proxyServer = Bun.serve({
-      port: 0,
-      fetch(req) {
-        proxyHits.push({ method: req.method, url: req.url });
-        return new Response("proxy-ok");
-      },
-    });
+    proxy = createConnectProxy();
   });
 
   afterEach(async () => {
     await removeSettings(SETTINGS_ID);
+    proxy.hits.length = 0;
   });
 
   afterAll(() => {
     targetServer?.stop();
-    proxyServer?.stop();
+    proxy?.close();
   });
 
   test("request routes through proxy when enabled", async () => {
     await setSettings(SETTINGS_ID, {
       proxyEnabled: "true",
-      proxyUrls: `http://localhost:${proxyServer.port}`,
+      proxyUrls: `http://localhost:${proxy.port}`,
     });
 
-    proxyHits = [];
     const targetUrl = `http://localhost:${targetServer.port}/test`;
     const res = await outgoingFetch(targetUrl);
     const body = await res.text();
 
-    expect(proxyHits.length).toBeGreaterThan(0);
-    expect(body).toBe("proxy-ok");
+    expect(proxy.hits.length).toBeGreaterThan(0);
+    expect(body).toBe("target-ok");
   });
 
   test("request goes direct when proxy is disabled", async () => {
     await setSettings(SETTINGS_ID, {
       proxyEnabled: "false",
-      proxyUrls: `http://localhost:${proxyServer.port}`,
+      proxyUrls: `http://localhost:${proxy.port}`,
     });
 
-    proxyHits = [];
     const targetUrl = `http://localhost:${targetServer.port}/test`;
     const res = await outgoingFetch(targetUrl);
     const body = await res.text();
 
-    expect(proxyHits.length).toBe(0);
+    expect(proxy.hits.length).toBe(0);
     expect(body).toBe("target-ok");
   });
 
@@ -85,43 +123,34 @@ describe("outgoing proxy integration", () => {
   test("proxy receives the correct target URL", async () => {
     await setSettings(SETTINGS_ID, {
       proxyEnabled: "true",
-      proxyUrls: `http://localhost:${proxyServer.port}`,
+      proxyUrls: `http://localhost:${proxy.port}`,
     });
 
-    proxyHits = [];
     const targetUrl = `http://localhost:${targetServer.port}/specific-path?q=hello`;
     await outgoingFetch(targetUrl);
 
-    expect(proxyHits.length).toBe(1);
-    expect(proxyHits[0].url).toContain("/specific-path");
-    expect(proxyHits[0].url).toContain("q=hello");
+    expect(proxy.hits.length).toBe(1);
+    expect(proxy.hits[0]).toContain("localhost");
+    expect(proxy.hits[0]).toContain(String(targetServer.port));
   });
 
   test("round-robins across multiple proxy URLs", async () => {
-    let secondProxyHit = false;
-    const secondProxy = Bun.serve({
-      port: 0,
-      fetch() {
-        secondProxyHit = true;
-        return new Response("proxy2-ok");
-      },
-    });
+    const secondProxy = createConnectProxy();
 
     await setSettings(SETTINGS_ID, {
       proxyEnabled: "true",
-      proxyUrls: `http://localhost:${proxyServer.port}\nhttp://localhost:${secondProxy.port}`,
+      proxyUrls: `http://localhost:${proxy.port}\nhttp://localhost:${secondProxy.port}`,
     });
 
-    proxyHits = [];
     const targetUrl = `http://localhost:${targetServer.port}/test`;
 
     await outgoingFetch(targetUrl);
     await outgoingFetch(targetUrl);
 
-    const hitFirst = proxyHits.length > 0;
-    const hitSecond = secondProxyHit;
+    const hitFirst = proxy.hits.length > 0;
+    const hitSecond = secondProxy.hits.length > 0;
     expect(hitFirst || hitSecond).toBe(true);
 
-    secondProxy.stop();
+    secondProxy.close();
   });
 });
