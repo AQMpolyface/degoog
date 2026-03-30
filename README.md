@@ -121,6 +121,7 @@ Aside from the official store these are third party repositories, they have been
 | Lazerleif Maps           | `https://github.com/lazerleif/degoog-maps.git`                     |
 | trankil                  | `https://github.com/Arkmind/trankil.git`                           |
 | TheAnnoying's Extensions | `https://github.com/TheAnnoying/theannoying-degoog-extensions.git` |
+| SiaoZeng SearXNG         | `https://github.com/SiaoZeng/degoog-searxng-extensions.git`        |
 
 ## Documentation
 
