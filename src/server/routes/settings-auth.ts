@@ -3,6 +3,7 @@ import { getSettings, setSettings, asString } from "../utils/plugin-settings";
 import { getMiddleware } from "../extensions/middleware/registry";
 import { isPublicInstance } from "../utils/public-instance";
 import { outgoingFetch } from "../utils/outgoing";
+import { getRandomUserAgent } from "../utils/user-agents";
 
 const DEGOOG_SETTINGS_ID = "degoog-settings";
 
@@ -212,6 +213,11 @@ async function fetchIp(useFn: typeof fetch): Promise<string | null> {
   try {
     const res = await useFn(IP_CHECK_URL, {
       signal: AbortSignal.timeout(IP_CHECK_TIMEOUT_MS),
+      headers: {
+        "User-Agent": getRandomUserAgent(),
+        Accept: "application/json,text/plain,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { ip?: string };
