@@ -48,7 +48,7 @@ export async function performTabSearch(
   clearSlotPanels();
   document.title = `${query} - degoog`;
 
-  const layout = document.querySelector<HTMLElement>(".results-layout");
+  const layout = document.getElementById("results-layout");
   if (layout) layout.classList.remove("media-mode");
 
   const urlParams = new URLSearchParams({ q: query, type: `tab:${tabId}` });

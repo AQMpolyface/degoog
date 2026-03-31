@@ -293,6 +293,16 @@
               <td>Tab bar (Web, Images, Videos, News) + Options dropdown</td>
             </tr>
             <tr>
+              <td><code>search-media-preview</code></td>
+              <td><code>degoog-search-media-preview</code></td>
+              <td>Image / video preview panel (prev/next, info)</td>
+            </tr>
+            <tr>
+              <td><code>search-lightbox</code></td>
+              <td><code>degoog-search-lightbox</code></td>
+              <td>Full-screen image lightbox overlay</td>
+            </tr>
+            <tr>
               <td><code>result</code></td>
               <td><code>degoog-result</code></td>
               <td>Web / news search result item</td>
@@ -350,10 +360,11 @@
 
         <h3>Skeleton IDs (do not remove)</h3>
         <p>
-          The skeleton is the set of empty container elements that the
-          JavaScript injects templates into. If you override a page via
-          the <code>html</code> key, you <strong>must</strong> keep these
-          IDs or the corresponding feature will break.
+          The skeleton is the set of empty <code>&lt;div&gt;</code> elements
+          identified only by <code>id</code> (no classes). JavaScript injects
+          templates into them. If you override a page via the
+          <code>html</code> key, you <strong>must</strong> keep these IDs or
+          the corresponding feature will break.
         </p>
 
         <h4>Home page skeleton</h4>
@@ -380,16 +391,19 @@
             <tr><td><code>results-header</code></td><td>Container for <code>degoog-search-header</code></td></tr>
             <tr><td><code>results-tabs</code></td><td>Container for <code>degoog-search-tabs</code></td></tr>
             <tr><td><code>results-meta</code></td><td>Engine timing / stats bar</td></tr>
+            <tr><td><code>results-layout</code></td><td>Layout wrapper (main + sidebar + media preview)</td></tr>
+            <tr><td><code>results-main</code></td><td>Main results column</td></tr>
             <tr><td><code>at-a-glance</code></td><td>At-a-glance answer box</td></tr>
             <tr><td><code>results-list</code></td><td>Search results container</td></tr>
             <tr><td><code>pagination</code></td><td>Page navigation</td></tr>
+            <tr><td><code>sidebar-col</code></td><td>Sidebar column wrapper</td></tr>
             <tr><td><code>results-sidebar</code></td><td>Sidebar content</td></tr>
             <tr><td><code>slot-above-results</code></td><td>Plugin slot above results</td></tr>
             <tr><td><code>slot-below-results</code></td><td>Plugin slot below results</td></tr>
             <tr><td><code>slot-above-sidebar</code></td><td>Plugin slot above sidebar</td></tr>
             <tr><td><code>slot-below-sidebar</code></td><td>Plugin slot below sidebar</td></tr>
-            <tr><td><code>media-preview-panel</code></td><td>Image/video preview panel</td></tr>
-            <tr><td><code>img-lightbox</code></td><td>Full-screen image lightbox</td></tr>
+            <tr><td><code>media-preview-panel</code></td><td>Container for <code>degoog-search-media-preview</code></td></tr>
+            <tr><td><code>img-lightbox</code></td><td>Container for <code>degoog-search-lightbox</code></td></tr>
           </tbody>
         </table>
 
@@ -427,6 +441,23 @@
           <li><code>tools-time-val</code>, <code>tools-lang-val</code> &mdash; active filter labels</li>
           <li><code>tools-lang-filter</code>, <code>tools-lang-list</code> &mdash; language filter</li>
           <li><code>tools-date-from</code>, <code>tools-date-to</code>, <code>tools-date-apply</code> &mdash; custom date range</li>
+        </ul>
+
+        <h4><code>degoog-search-media-preview</code></h4>
+        <ul>
+          <li><code>media-preview-close</code> &mdash; close button</li>
+          <li><code>media-preview-prev</code> &mdash; previous image/video button</li>
+          <li><code>media-preview-next</code> &mdash; next image/video button</li>
+          <li><code>media-preview-img</code> &mdash; preview image element</li>
+          <li><code>media-preview-info</code> &mdash; info panel below image</li>
+        </ul>
+
+        <h4><code>degoog-search-lightbox</code></h4>
+        <ul>
+          <li><code>img-lightbox-bg</code> &mdash; backdrop overlay</li>
+          <li><code>img-lightbox-close</code> &mdash; close button</li>
+          <li><code>img-lightbox-wrap</code> &mdash; image container</li>
+          <li><code>img-lightbox-img</code> &mdash; full-size image element</li>
         </ul>
 
         <p>

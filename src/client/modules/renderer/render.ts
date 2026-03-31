@@ -34,7 +34,7 @@ export const buildResultContext = (r: ScoredResult): Record<string, unknown> => 
 
 export function renderResults(results: ScoredResult[]): void {
   const container = document.getElementById("results-list");
-  const layout = document.querySelector<HTMLElement>(".results-layout");
+  const layout = document.getElementById("results-layout");
   if (!container || !layout) return;
 
   if (state.currentType === "images" || state.currentType === "videos") {

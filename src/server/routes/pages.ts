@@ -74,7 +74,10 @@ async function applyPagePlaceholders(html: string): Promise<string> {
     .replace("__THEME_ATTRS__", themeAttrs)
     .replace("__PLUGIN_ASSETS__", await pluginAssetsPlaceholder());
   if (result.includes("__THEME_TEMPLATES__")) {
-    result = result.replace("__THEME_TEMPLATES__", await getThemeTemplatesHtml());
+    result = result.replace(
+      "__THEME_TEMPLATES__",
+      await getThemeTemplatesHtml(),
+    );
   } else {
     const templates = await getThemeTemplatesHtml();
     if (templates) {

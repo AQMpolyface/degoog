@@ -108,7 +108,7 @@ export async function performSearch(
     "results-search-input",
   ) as HTMLInputElement | null;
   if (resultsInput) resultsInput.value = query;
-  const layout = document.querySelector<HTMLElement>(".results-layout");
+  const layout = document.getElementById("results-layout");
   if (resolvedType === "images" || resolvedType === "videos") {
     layout?.classList.add("media-mode");
   } else {

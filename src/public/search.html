@@ -1,86 +1,73 @@
 <div id="app">
-  <div class="results-page" id="results-page">
-    <div class="results-header" id="results-header"></div>
-    <div class="results-tabs" id="results-tabs"></div>
-    <div class="results-meta" id="results-meta"></div>
-    <div class="results-layout">
-      <div class="results-main">
+  <div id="results-page">
+    <div id="results-header"></div>
+    <div id="results-tabs"></div>
+    <div id="results-meta"></div>
+    <div id="results-layout">
+      <div id="results-main">
         <div id="at-a-glance"></div>
-        <div
-          id="slot-above-results"
-          class="results-slot results-slot--above"
-          data-position="above-results"
-        ></div>
+        <div id="slot-above-results" data-position="above-results"></div>
         <div id="results-list"></div>
         <div id="pagination"></div>
-        <div
-          id="slot-below-results"
-          class="results-slot results-slot--below"
-          data-position="below-results"
-        ></div>
+        <div id="slot-below-results" data-position="below-results"></div>
       </div>
-      <aside class="results-sidebar">
-        <div
-          id="slot-above-sidebar"
-          class="results-slot results-slot--above-sidebar"
-          data-position="above-sidebar"
-        ></div>
+      <div id="sidebar-col">
+        <div id="slot-above-sidebar" data-position="above-sidebar"></div>
         <div id="results-sidebar"></div>
-        <div
-          id="slot-below-sidebar"
-          class="results-slot results-slot--below-sidebar"
-          data-position="below-sidebar"
-        ></div>
-      </aside>
-      <div class="media-preview-panel" id="media-preview-panel">
-        <button class="media-preview-close" id="media-preview-close">
-          &times;
-        </button>
-        <div class="media-preview-img-wrap">
-          <button
-            class="media-preview-nav media-preview-prev"
-            id="media-preview-prev"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <img
-            class="media-preview-img"
-            id="media-preview-img"
-            src=""
-            alt=""
-          />
-          <button
-            class="media-preview-nav media-preview-next"
-            id="media-preview-next"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="9 6 15 12 9 18" />
-            </svg>
-          </button>
-        </div>
-        <div class="media-preview-info" id="media-preview-info"></div>
+        <div id="slot-below-sidebar" data-position="below-sidebar"></div>
       </div>
+      <div id="media-preview-panel"></div>
     </div>
   </div>
 </div>
+<div id="img-lightbox"></div>
 
-<div class="img-lightbox" id="img-lightbox">
+<template id="degoog-search-media-preview">
+  <button class="media-preview-close" id="media-preview-close">
+    &times;
+  </button>
+  <div class="media-preview-img-wrap">
+    <button
+      class="media-preview-nav media-preview-prev"
+      id="media-preview-prev"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+    </button>
+    <img
+      class="media-preview-img"
+      id="media-preview-img"
+      src=""
+      alt=""
+    />
+    <button
+      class="media-preview-nav media-preview-next"
+      id="media-preview-next"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="9 6 15 12 9 18" />
+      </svg>
+    </button>
+  </div>
+  <div class="media-preview-info" id="media-preview-info"></div>
+</template>
+
+<template id="degoog-search-lightbox">
   <div class="img-lightbox-bg" id="img-lightbox-bg"></div>
   <button class="img-lightbox-close" id="img-lightbox-close">
     &times;
@@ -88,7 +75,7 @@
   <div class="img-lightbox-wrap" id="img-lightbox-wrap">
     <img class="img-lightbox-img" id="img-lightbox-img" src="" alt="" />
   </div>
-</div>
+</template>
 
 <template id="degoog-search-header">
   <a href="/" class="results-logo">

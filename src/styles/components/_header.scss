@@ -1,4 +1,4 @@
-.header {
+#header {
   display: flex;
   justify-content: flex-end;
   padding: 20px 20px;
@@ -7,22 +7,22 @@
   left: 0;
   right: 0;
   z-index: 10;
+}
 
-  &-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  &-link {
-    @include button-reset;
-    font-size: $font-size-small;
-    color: var(--text-secondary);
-    font-family: $font-family;
-    text-decoration: none;
+.header-link {
+  @include button-reset;
+  font-size: $font-size-small;
+  color: var(--text-secondary);
+  font-family: $font-family;
+  text-decoration: none;
 
-    &:hover {
-      color: var(--text-primary);
-    }
+  &:hover {
+    color: var(--text-primary);
   }
 }
