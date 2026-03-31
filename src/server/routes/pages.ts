@@ -84,6 +84,40 @@ async function applyPagePlaceholders(html: string): Promise<string> {
   return result;
 }
 
+function isFullDocument(html: string): boolean {
+  const trimmed = html.trimStart().toLowerCase();
+  return trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
+}
+
+async function getLayout(): Promise<string> {
+  const themeLayout = await getThemeHtml("layout");
+  if (themeLayout) return themeLayout;
+  return Bun.file("src/public/layout.html").text();
+}
+
+async function buildLayoutPage(
+  pageName: string,
+  bodyClass?: string,
+): Promise<string> {
+  const layout = await getLayout();
+  const pageContent = await Bun.file(`src/public/${pageName}`).text();
+  const html = layout
+    .replace("__PAGE_CONTENT__", pageContent)
+    .replace("__BODY_CLASS__", bodyClass ? `class="${bodyClass}"` : "");
+  return applyPagePlaceholders(html);
+}
+
+async function buildThemedLayoutPage(
+  themePageHtml: string,
+  bodyClass?: string,
+): Promise<string> {
+  const layout = await getLayout();
+  const html = layout
+    .replace("__PAGE_CONTENT__", themePageHtml)
+    .replace("__BODY_CLASS__", bodyClass ? `class="${bodyClass}"` : "");
+  return applyPagePlaceholders(html);
+}
+
 async function buildPage(filename: string): Promise<string> {
   const html = await Bun.file(`src/public/${filename}`).text();
   return applyPagePlaceholders(html);
@@ -97,15 +131,23 @@ router.get("/", async (c) => {
   }
   const override = await getThemeHtml("index");
   if (override) {
-    return c.html(await applyPagePlaceholders(override));
+    if (isFullDocument(override)) {
+      return c.html(await applyPagePlaceholders(override));
+    }
+    return c.html(await buildThemedLayoutPage(override));
   }
-  return c.html(await buildPage("index.html"));
+  return c.html(await buildLayoutPage("index.html"));
 });
 
 router.get("/search", async (c) => {
   const override = await getThemeHtml("search");
-  if (override) return c.html(await applyPagePlaceholders(override));
-  return c.html(await buildPage("search.html"));
+  if (override) {
+    if (isFullDocument(override)) {
+      return c.html(await applyPagePlaceholders(override));
+    }
+    return c.html(await buildThemedLayoutPage(override, "has-results"));
+  }
+  return c.html(await buildLayoutPage("search.html", "has-results"));
 });
 
 router.get("/settings/", (c) => c.redirect("/settings", 301));

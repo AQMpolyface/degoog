@@ -45,17 +45,22 @@ const _fillPlaceholders = (
     return escapeHtml(String(val));
   });
 
+const _findTemplate = (templateId: string): HTMLTemplateElement | null => {
+  const all = document.querySelectorAll<HTMLTemplateElement>(
+    `template#${templateId}`,
+  );
+  return all.length > 0 ? all[all.length - 1] : null;
+};
+
 export const renderTemplate = (
   templateId: string,
   ctx: Record<string, unknown>,
 ): string | null => {
-  const el = document.getElementById(templateId) as HTMLTemplateElement | null;
-  if (!el || el.tagName !== "TEMPLATE") return null;
+  const el = _findTemplate(templateId);
+  if (!el) return null;
   const tpl = el.innerHTML;
   return _fillPlaceholders(_processBlocks(tpl, ctx), ctx);
 };
 
-export const hasTemplate = (templateId: string): boolean => {
-  const el = document.getElementById(templateId);
-  return !!el && el.tagName === "TEMPLATE";
-};
+export const hasTemplate = (templateId: string): boolean =>
+  _findTemplate(templateId) !== null;

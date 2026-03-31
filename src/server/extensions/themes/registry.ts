@@ -23,6 +23,7 @@ export interface ThemeManifest {
   settingsSchema?: SettingField[];
   dataAttrsFromSettings?: Record<string, string>;
   html?: {
+    layout?: string;
     index?: string;
     search?: string;
     settings?: string;
@@ -154,7 +155,7 @@ export function getThemeById(id: string): LoadedTheme | null {
 }
 
 export async function getThemeHtml(
-  page: "index" | "search" | "settings",
+  page: "layout" | "index" | "search" | "settings",
 ): Promise<string | null> {
   const theme = getActiveTheme();
   if (!theme) return null;

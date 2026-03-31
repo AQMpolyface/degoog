@@ -17,6 +17,7 @@ import { state } from "../state";
 
 import { initInstallPrompt } from "../utils/install-prompt";
 import { initSearchBarActions } from "../utils/search-bar-actions";
+import { renderPageTemplates } from "./renderer/render-page";
 
 function _copyToClipboard(text: string, onSuccess: () => void): void {
   const el = document.createElement("textarea");
@@ -35,6 +36,8 @@ function _copyToClipboard(text: string, onSuccess: () => void): void {
 }
 
 export function init(): void {
+  renderPageTemplates();
+
   const searchInput = document.getElementById(
     "search-input",
   ) as HTMLInputElement | null;
