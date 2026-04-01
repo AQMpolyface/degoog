@@ -15,6 +15,7 @@ import { fetch as bunFetch } from "bun";
 import { getSettings } from "./plugin-settings";
 import { debug } from "./logger";
 import { isSocksProxy, fetchViaSocks } from "./socks-fetch";
+import { fetchViaHttpProxy } from "./http-proxy-fetch";
 import { fetchViaCurl } from "./curl-fetch";
 
 export interface OutgoingFetchOptions {
@@ -120,14 +121,13 @@ export async function outgoingFetch(
       });
     }
 
-    return bunFetch(url, {
+    return fetchViaHttpProxy(url, proxyUrl!, {
       method,
       redirect,
       signal,
       headers,
-      body,
-      proxy: proxyUrl!,
-    } as RequestInit & { proxy: string });
+      body: body ?? undefined,
+    });
   };
 
   if (transport === "curl") {
