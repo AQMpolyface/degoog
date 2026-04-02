@@ -1,9 +1,12 @@
 services:
   degoog:
-    image: ghcr.io/fccview/degoog:latest
+    build: .
+    environment:
+      - DEGOOG_GLOBAL_AUTH=true
+      - DEGOOG_PASSWORDS=Cuddle0-Sterilize0-Drift7-Eloquence1-Capacity8
     volumes:
       - ./data:/app/data
     user: "1000:1000"
     ports:
-      - "4444:4444"
+      - "0.0.0.0:4444:4444"
     restart: unless-stopped
