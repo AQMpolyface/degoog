@@ -92,9 +92,19 @@ async function ensureReposStructure(): Promise<void> {
 async function readReposData(): Promise<ReposData> {
   await ensureReposStructure();
   const raw = await readFile(getReposPath(), "utf-8");
-  const parsed = JSON.parse(raw) as ReposData;
-  if (!Array.isArray(parsed.repos)) parsed.repos = [];
-  if (!Array.isArray(parsed.installed)) parsed.installed = [];
+  let parsed: ReposData;
+  try {
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+      parsed = { repos: [], installed: [] };
+    } else {
+      parsed = obj as ReposData;
+      if (!Array.isArray(parsed.repos)) parsed.repos = [];
+      if (!Array.isArray(parsed.installed)) parsed.installed = [];
+    }
+  } catch {
+    parsed = { repos: [], installed: [] };
+  }
   return parsed;
 }
 
@@ -253,7 +263,7 @@ async function listScreenshots(dir: string): Promise<string[]> {
   const screenshotsDir = join(dir, "screenshots");
   try {
     const files = await readdir(screenshotsDir);
-    return files.filter((f) => /\.(png|jpg|jpeg|gif|webp)$/i.test(f));
+    return files.filter((f) => /\.(png|jpg|jpeg|gif|webp)$/i.test(f)).sort();
   } catch {
     return [];
   }
@@ -483,6 +493,10 @@ export async function installItem(
   _installingSet.add(key);
   const storeDir = getStoreDir();
   const srcDir = join(storeDir, repo.localPath, normalizedPath);
+  const repoBase = resolve(join(storeDir, repo.localPath));
+  if (!resolve(srcDir).startsWith(repoBase + "/")) {
+    throw new Error("Invalid item path.");
+  }
   try {
     await stat(srcDir);
   } catch {

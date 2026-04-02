@@ -1,5 +1,7 @@
 import { renderField, initUrlList } from "./modal-fields";
-import type { ExtensionMeta } from "../../../types";
+import { getStoredToken } from "../../settings/settings";
+import { jsonHeaders } from "../../../utils/request";
+import type { ExtensionMeta, SettingField } from "../../../types";
 
 const overlay = document.getElementById("ext-modal-overlay");
 const titleEl = document.getElementById("ext-modal-title");
@@ -63,17 +65,72 @@ const _collectValues = (): Record<string, string | string[]> => {
   return values;
 };
 
+const _advancedFieldDiffersFromDefault = (
+  field: SettingField,
+  settings: Record<string, string | string[]>,
+): boolean => {
+  const raw = settings[field.key];
+  const defaultStr =
+    field.default !== undefined && field.default !== null
+      ? String(field.default)
+      : "";
+
+  if (field.type === "urllist") {
+    return Array.isArray(raw) && raw.length > 0;
+  }
+
+  if (raw === undefined) {
+    return false;
+  }
+
+  const val = Array.isArray(raw) ? raw.join("\n") : String(raw);
+
+  if (field.type === "toggle") {
+    const v = val === "true" ? "true" : "false";
+    const d = defaultStr === "true" ? "true" : "false";
+    return v !== d;
+  }
+
+  if (defaultStr === "") {
+    return val.trim() !== "";
+  }
+
+  return val !== defaultStr;
+};
+
 export function openModal(ext: ExtensionMeta): void {
   currentExt = ext;
   if (titleEl) titleEl.textContent = `Configure ${ext.displayName}`;
   if (statusEl) statusEl.textContent = "";
 
   if (bodyEl) {
-    bodyEl.innerHTML = ext.settingsSchema
-      .map((field) =>
-        renderField(field, String(ext.settings[field.key] ?? ""), ext),
-      )
+    const normalFields = ext.settingsSchema.filter((f) => !f.advanced);
+    const advancedFields = ext.settingsSchema.filter((f) => f.advanced);
+    let html = normalFields
+      .map((field) => renderField(field, String(ext.settings[field.key] ?? field.default ?? ""), ext))
       .join("");
+    if (advancedFields.length > 0) {
+      const showAdvanced = advancedFields.some((f) =>
+        _advancedFieldDiffersFromDefault(f, ext.settings),
+      );
+      html += `<div class="ext-advanced-section">
+        <label class="ext-field-toggle-row ext-advanced-header">
+          <span class="ext-field-label">Advanced</span>
+          <label class="engine-toggle">
+            <input type="checkbox" class="ext-advanced-toggle"${showAdvanced ? " checked" : ""}>
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+        <div class="ext-advanced-body"${showAdvanced ? "" : " hidden"}>${advancedFields
+          .map((field) => renderField(field, String(ext.settings[field.key] ?? field.default ?? ""), ext))
+          .join("")}</div>
+      </div>`;
+    }
+    bodyEl.innerHTML = html;
+    bodyEl.querySelector(".ext-advanced-toggle")?.addEventListener("change", (e) => {
+      const body = bodyEl.querySelector<HTMLElement>(".ext-advanced-body");
+      if (body) body.hidden = !(e.target as HTMLInputElement).checked;
+    });
     initUrlList(bodyEl);
     bodyEl
       .querySelectorAll<HTMLElement>(".ext-field-input--configured")
@@ -111,7 +168,7 @@ async function _save(): Promise<void> {
       `/api/extensions/${encodeURIComponent(currentExt.id)}/settings`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: jsonHeaders(getStoredToken),
         body: JSON.stringify(values),
       },
     );

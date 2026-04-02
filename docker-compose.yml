@@ -6,7 +6,6 @@ services:
       - DEGOOG_PASSWORDS=Cuddle0-Sterilize0-Drift7-Eloquence1-Capacity8
     volumes:
       - ./data:/app/data
-    user: "1000:1000"
     ports:
       - "0.0.0.0:4444:4444"
     restart: unless-stopped

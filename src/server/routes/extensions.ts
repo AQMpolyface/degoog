@@ -38,7 +38,6 @@ async function getSlotExtensionMeta(): Promise<ExtensionMeta[]> {
   for (const slot of slots) {
     const baseSchema = slot.settingsSchema ?? [];
     const hasPositionChoice = (slot.slotPositions?.length ?? 0) > 0;
-    if (baseSchema.length === 0 && !hasPositionChoice) continue;
     const fullSchema: SettingField[] = [...baseSchema];
     if (hasPositionChoice) {
       fullSchema.push({
@@ -67,7 +66,7 @@ async function getSlotExtensionMeta(): Promise<ExtensionMeta[]> {
       displayName: slot.name,
       description: slot.description,
       type: ExtensionStoreType.Plugin,
-      configurable: true,
+      configurable: fullSchema.length > 0,
       settingsSchema: fullSchema,
       settings,
     });
@@ -122,6 +121,10 @@ router.post("/api/extensions/:id/settings", async (c) => {
 
   const schemaKeys = new Set(ext.settingsSchema.map((f) => f.key));
   schemaKeys.add("disabled");
+  if (ext.type === ExtensionStoreType.Engine) {
+    schemaKeys.add("score");
+    schemaKeys.add("outgoingTransport");
+  }
   const filtered: Record<string, SettingValue> = {};
   for (const [key, value] of Object.entries(body)) {
     if (!schemaKeys.has(key)) continue;
