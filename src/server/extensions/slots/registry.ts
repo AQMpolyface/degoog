@@ -1,3 +1,4 @@
+import { join } from "path";
 import { SlotPanelPosition, type SlotPlugin } from "../../types";
 import { isDisabled } from "../../utils/plugin-settings";
 import {
@@ -7,6 +8,15 @@ import {
 } from "../../utils/plugin-assets";
 import { pluginsDir } from "../../utils/paths";
 import { createRegistry } from "../registry-factory";
+
+const builtinsDir = join(
+  process.cwd(),
+  "src",
+  "server",
+  "extensions",
+  "commands",
+  "builtins",
+);
 
 function isSlotPlugin(val: unknown): val is SlotPlugin {
   if (typeof val !== "object" || val === null) return false;
@@ -34,7 +44,10 @@ function isSlotPlugin(val: unknown): val is SlotPlugin {
 }
 
 const registry = createRegistry<SlotPlugin>({
-  dirs: () => [{ dir: pluginsDir(), source: "plugin" }],
+  dirs: () => [
+    { dir: builtinsDir, source: "builtin" },
+    { dir: pluginsDir(), source: "plugin" },
+  ],
   match: (mod) => {
     const s = mod.slot ?? mod.slotPlugin ?? (mod.default as Record<string, unknown>)?.slot;
     return isSlotPlugin(s) ? s : null;
