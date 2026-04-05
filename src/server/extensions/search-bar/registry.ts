@@ -14,9 +14,9 @@ import { createTranslatorFromPath } from "../../utils/translation";
 import { pluginsDir } from "../../utils/paths";
 import { createRegistry } from "../registry-factory";
 
-interface StoredAction {
+interface PluginActions {
   pluginId: string;
-  action: SearchBarAction;
+  actions: SearchBarAction[];
 }
 
 function isSearchBarAction(val: unknown): val is SearchBarAction {
@@ -34,48 +34,45 @@ function isSearchBarActionArray(val: unknown): val is SearchBarAction[] {
   return Array.isArray(val) && val.every(isSearchBarAction);
 }
 
-let storedActions: StoredAction[] = [];
-
-const registry = createRegistry<SearchBarAction[]>({
+const registry = createRegistry<PluginActions>({
   dirs: () => [{ dir: pluginsDir(), source: "plugin" }],
   match: (mod) => {
     const actions =
       mod.searchBarActions ??
       (mod.default as Record<string, unknown>)?.searchBarActions;
-    return isSearchBarActionArray(actions) ? actions : null;
+    return isSearchBarActionArray(actions) ? { pluginId: "", actions } : null;
   },
-  onLoad: async (actions, { entryPath, folderName }) => {
+  onLoad: async (item, { entryPath, folderName }) => {
     const t = await createTranslatorFromPath(entryPath);
-    for (const action of actions) {
-      action.t = t;
-      storedActions.push({
-        pluginId: folderName,
-        action: { ...action, id: `${folderName}-${action.id}` },
-      });
-    }
+    item.pluginId = folderName;
+    item.actions = item.actions.map((action) => ({
+      ...action,
+      id: `${folderName}-${action.id}`,
+      t,
+    }));
   },
   debugTag: "search-bar",
 });
 
 export async function initSearchBarActions(): Promise<void> {
-  storedActions = [];
   await registry.init();
 }
 
 export async function getSearchBarActions(): Promise<SearchBarAction[]> {
   const out: SearchBarAction[] = [];
-  for (const { pluginId, action } of storedActions) {
+  for (const { pluginId, actions } of registry.items()) {
     const pluginSettingsId = `plugin-${pluginId}`;
     if (await isDisabled(pluginSettingsId)) continue;
     const settings = await getSettings(pluginSettingsId);
-    const label = asString(settings.buttonLabel).trim() || action.label;
-    out.push({ ...action, label });
+    for (const action of actions) {
+      const label = asString(settings.buttonLabel).trim() || action.label;
+      out.push({ ...action, label });
+    }
   }
   return out;
 }
 
 export async function reloadSearchBarActions(): Promise<void> {
-  storedActions = [];
   await registry.init();
 }
 
@@ -83,9 +80,9 @@ export async function getSearchBarActionExtensionMeta(): Promise<
   ExtensionMeta[]
 > {
   const out: ExtensionMeta[] = [];
-  const seen = new Set<string>();
-  for (const { pluginId, action } of storedActions) {
-    if (seen.has(pluginId)) continue;
+  for (const { pluginId, actions } of registry.items()) {
+    if (actions.length === 0) continue;
+    const action = actions[0];
     const schema =
       (
         action as SearchBarAction & {
@@ -93,7 +90,6 @@ export async function getSearchBarActionExtensionMeta(): Promise<
         }
       ).settingsSchema ?? [];
     if (schema.length === 0) continue;
-    seen.add(pluginId);
     const id = `plugin-${pluginId}`;
     const raw = await getSettings(id);
     const settings = maskSecrets(raw, schema);
@@ -119,13 +115,11 @@ export function getAllSearchBarTranslators(): {
   namespace: string;
   translator: Translate;
 }[] {
-  const seen = new Map<string, Translate>();
-  for (const { pluginId, action } of storedActions) {
-    if (!action.t || seen.has(pluginId)) continue;
-    seen.set(pluginId, action.t);
-  }
-  return Array.from(seen.entries()).map(([id, translator]) => ({
-    namespace: `search-bar/${id}`,
-    translator,
-  }));
+  return registry
+    .items()
+    .filter(({ actions }) => !!actions[0]?.t)
+    .map(({ pluginId, actions }) => ({
+      namespace: `search-bar/${pluginId}`,
+      translator: actions[0].t!,
+    }));
 }

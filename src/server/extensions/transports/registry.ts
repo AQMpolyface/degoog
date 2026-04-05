@@ -13,8 +13,6 @@ const _builtins: Transport[] = [
   new AutoTransport(),
 ];
 
-const _seenNames = new Set<string>(_builtins.map((t) => t.name));
-
 function _isTransport(val: unknown): val is Transport {
   return (
     typeof val === "object" &&
@@ -35,8 +33,8 @@ const registry = createRegistry<Transport>({
     const instance: Transport =
       typeof Export === "function" ? new (Export as new () => Transport)() : (Export as Transport);
     if (!_isTransport(instance)) return null;
-    if (_seenNames.has(instance.name)) return null;
-    _seenNames.add(instance.name);
+    if (_builtins.some((t) => t.name === instance.name)) return null;
+    if (registry.items().some((t) => t.name === instance.name)) return null;
     return instance;
   },
   onLoad: async (instance) => {
@@ -101,8 +99,6 @@ export async function getTransportExtensionMeta(): Promise<ExtensionMeta[]> {
 }
 
 export async function initTransports(): Promise<void> {
-  _seenNames.clear();
-  for (const t of _builtins) _seenNames.add(t.name);
   await registry.init();
 }
 
