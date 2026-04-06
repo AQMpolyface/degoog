@@ -30,4 +30,11 @@ describe("slots registry", () => {
     expect(slot!.position).toBe(SlotPanelPosition.AtAGlance);
     expect(slot!.settingsId).toBe("ai-summary");
   });
+
+  test("built-in at-a-glance slot has position at-a-glance and waitForResults", () => {
+    const slot = getSlotPluginById("at-a-glance");
+    expect(slot).not.toBeNull();
+    expect(slot!.position).toBe(SlotPanelPosition.AtAGlance);
+    expect(slot!.waitForResults).toBe(true);
+  });
 });
