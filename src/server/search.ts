@@ -258,7 +258,6 @@ export const search = async (
       type,
       engineTimings: [],
       relatedSearches: [],
-      knowledgePanel: null,
     };
   }
 

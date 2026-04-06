@@ -18,8 +18,12 @@ import {
 } from "../modules/renderer/render";
 import { renderMediaEngineBar } from "../modules/renderer/render-media";
 import { state } from "../state";
-import { SlotPanelPosition } from "../types";
-import type { EngineTiming, ScoredResult, SearchResponse } from "../types";
+import {
+  EngineTiming,
+  ScoredResult,
+  SearchResponse,
+  SlotPanelPosition,
+} from "../types";
 import { hideAcDropdown } from "./autocomplete";
 import { getEngines } from "./engines";
 import { setActiveTab } from "./navigation";
