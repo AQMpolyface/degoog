@@ -63,11 +63,6 @@ router.get("/api/command", async (c) => {
       totalTime: timing.time,
       engineTimings: [timing],
       relatedSearches: [],
-      knowledgePanel: null,
-      atAGlance:
-        results.length > 0 && results[0].snippet
-          ? { ...results[0], score: 10, sources: [results[0].source] }
-          : null,
     });
   }
 
