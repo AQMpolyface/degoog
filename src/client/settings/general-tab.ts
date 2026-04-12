@@ -106,7 +106,6 @@ export async function initAppearanceSettings(): Promise<void> {
     const saved = await idbGet<boolean>(POST_METHOD_ENABLED);
     postMethodEnabled.checked = saved || false;
     postMethodEnabled.addEventListener("change", async () => {
-      console.log("Post method enabled:", postMethodEnabled.checked);
       await idbSet(POST_METHOD_ENABLED, postMethodEnabled.checked);
     });
   }
