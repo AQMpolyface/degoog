@@ -1,4 +1,4 @@
-import type { ExtensionStoreType } from "../../types";
+import type { ExtensionStoreType } from "./extension";
 
 export interface RepoInfo {
   url: string;
@@ -51,9 +51,36 @@ export interface RepoPackageJson {
   name?: string;
   description?: string;
   author?: string;
-  plugins?: Array<{ path: string; name: string; description?: string; version?: string; type?: string; dependencies?: string[] }>;
-  themes?: Array<{ path: string; name: string; description?: string; version?: string; dependencies?: string[] }>;
-  engines?: Array<{ path: string; name: string; description?: string; version?: string; type?: string; dependencies?: string[] }>;
+  plugins?: Array<{
+    path: string;
+    name: string;
+    description?: string;
+    version?: string;
+    type?: string;
+    dependencies?: string[];
+  }>;
+  themes?: Array<{
+    path: string;
+    name: string;
+    description?: string;
+    version?: string;
+    dependencies?: string[];
+  }>;
+  engines?: Array<{
+    path: string;
+    name: string;
+    description?: string;
+    version?: string;
+    type?: string;
+    dependencies?: string[];
+  }>;
+  transports?: Array<{
+    path: string;
+    name: string;
+    description?: string;
+    version?: string;
+    dependencies?: string[];
+  }>;
   "repo-image"?: string;
 }
 
@@ -61,4 +88,9 @@ export interface AuthorJson {
   name: string;
   url?: string;
   avatar?: string;
+}
+
+export interface RepoStatus {
+  url: string;
+  behind: number;
 }

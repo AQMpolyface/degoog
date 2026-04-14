@@ -22,7 +22,7 @@ import {
   getStoreDirPath,
   resolveScreenshotPath,
   resolveRepoAssetPath,
-} from "../extensions/store/repo-manager";
+} from "../extensions/store";
 import { ExtensionStoreType } from "../types";
 
 const router = new Hono();
@@ -256,7 +256,9 @@ router.get(
         ? `plugins/${item}`
         : type === ExtensionStoreType.Theme
           ? `themes/${item}`
-          : `engines/${item}`;
+          : type === ExtensionStoreType.Transport
+            ? `transports/${item}`
+            : `engines/${item}`;
     const resolved = resolveScreenshotPath(repoSlug, itemPath, filename);
     if (!resolved || !existsSync(resolved)) {
       return c.json({ error: "Not found" }, 404);
